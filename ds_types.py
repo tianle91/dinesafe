@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import List, Optional
 
-
 YMD_FORMAT = '%Y-%m-%d'
 
 assert date(2022, 4, 29).strftime(YMD_FORMAT) == '2022-04-29'
