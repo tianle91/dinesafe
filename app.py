@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Optional
+from streamlit_js_eval import get_geolocation
 
 import numpy as np
 import streamlit as st
@@ -10,6 +11,13 @@ from ds_types import Establishment
 from get_parsed import get_parsed_establishments
 from views.search_results import search_results
 from typing import Tuple
+import pandas as pd
+
+from math import radians
+from typing import List, Tuple
+from sklearn.metrics.pairwise import haversine_distances
+
+SHOW_TOP_N_RELEVANT = 10
 
 
 @dataclass
@@ -42,10 +50,15 @@ def get_closest_indices(
     source_vecs: np.ndarray,
 ) -> List[int]:
     search_term_vecs = tfidf.transform([search_term])
-    distances = [(i, d) for i, d in enumerate(
-        cosine_distances(source_vecs, search_term_vecs).reshape(-1))]
-    closest = sorted(distances, key=lambda x: x[1])[:10]
-    return [x[0] for x in closest]
+    distances = [
+        (i, d)
+        for i, d in enumerate(cosine_distances(
+            source_vecs,
+            search_term_vecs
+        ).reshape(-1))
+    ]
+    closest_first = sorted(distances, key=lambda x: x[1])
+    return [x[0] for x in closest_first]
 
 
 st.markdown('''
@@ -82,21 +95,33 @@ search_term = st.text_input(
     help='Just enter some words on the business name correctly.'
 )
 
-most_relevant_establishments: List[Establishment] = [
-    establishments[i] for i in get_closest_indices(
-        search_term=search_term,
-        tfidf=tfidf,
-        source_vecs=establishment_vecs
-    )
-]
 
-search_results(most_relevant=most_relevant_establishments)
+def get_haversine_distances(
+    center_loc: Tuple[float, float],
+    locs: List[Tuple[float, float]]
+) -> List[float]:
+    center_loc = [[radians(v) for v in center_loc]]
+    locs = [
+        [radians(v) for v in loc]
+        for loc in locs
+    ]
+    return list(haversine_distances(X=locs, Y=center_loc)[:, 0])
 
-# from streamlit_js_eval import get_geolocation
-# if st.checkbox("Center on my location"):
+
+# if st.checkbox("Near me"):
 #     geolocation = parse_geolocation(get_geolocation())
-#     st.write(
-#         f"Your coordinates are {geolocation.coords.latitude:.4f}, {geolocation.coords.longitude:.4f}")
+#     # st.write(
+#     #     f"Your coordinates are {geolocation.coords.latitude:.4f}, {geolocation.coords.longitude:.4f}")
+
+#     establishment_locs = [
+#         [establishment.latitude, establishment.longitude]
+#         for establishment in establishments
+#     ]
+#     establishment_distances = get_haversine_distances(
+#         center_loc=[geolocation.coords.latitude, geolocation.coords.longitude],
+#         locs=establishment_locs,
+#     )
+
 #     st.map(
 #         data=pd.DataFrame({
 #             'lat': [geolocation.coords.latitude],
@@ -104,3 +129,16 @@ search_results(most_relevant=most_relevant_establishments)
 #         }),
 #         zoom=17,
 #     )
+
+
+most_relevant_establishments: List[Establishment] = establishments[:SHOW_TOP_N_RELEVANT]
+if len(search_term) > 0:
+    most_relevant_establishments: List[Establishment] = [
+        establishments[i] for i in get_closest_indices(
+            search_term=search_term,
+            tfidf=tfidf,
+            source_vecs=establishment_vecs
+        )[:SHOW_TOP_N_RELEVANT]
+    ]
+
+search_results(most_relevant=most_relevant_establishments)
