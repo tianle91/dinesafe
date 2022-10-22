@@ -21,7 +21,7 @@ class Infraction:
 class Inspection:
     status: str
     date: date
-    infraction: Infraction
+    infraction: List[Infraction]
 
 
 @dataclass
