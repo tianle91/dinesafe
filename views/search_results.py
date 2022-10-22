@@ -23,6 +23,7 @@ def search_results(most_relevant: List[Establishment]):
         last_inspection = latest_inspections[0] if len(latest_inspections) > 0 else None
 
         last_inspection_dt_str = 'NA'
+        last_inspection_deficiencies = []
         if last_inspection is not None:
             last_inspection_dt_str = last_inspection.date.strftime(YMD_FORMAT)
             last_inspection_deficiencies = [
