@@ -42,7 +42,7 @@ def get_parsed_value(d, k):
         return None
     if 'DATE' in k:
         return datetime.strptime(v, YMD_FORMAT)
-    if 'AMOUNT' in k:
+    if 'AMOUNT' in k or 'LATITUDE' in k or 'LONGITUDE' in k:
         return float(v)
     return v
 
