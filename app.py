@@ -31,7 +31,7 @@ class GeoLocation:
     timestamp: int
 
 
-def parse_geolocation(d) -> GeoLocation:
+def parse_geolocation(d: dict) -> GeoLocation:
     return GeoLocation(
         coords=Coords(**d.get('coords', {})),
         timestamp=d.get('timestamp'),
@@ -108,10 +108,15 @@ def get_haversine_distances(
 
 geolocation = None
 if st.checkbox("Near me"):
-    geolocation = parse_geolocation(get_geolocation())
-    st.success(
-        f"Centering on {geolocation.coords.latitude:.4f}, {geolocation.coords.longitude:.4f}")
+    geo_d = get_geolocation()
+    if geo_d is not None:
+        geolocation = parse_geolocation(geo_d)
 
+if geolocation is not None:
+    st.success(
+        'Centering on '
+        f"{geolocation.coords.latitude:.4f}, {geolocation.coords.longitude:.4f}"
+    )
     establishment_locs = [
         [establishment.latitude, establishment.longitude]
         for establishment in establishments
