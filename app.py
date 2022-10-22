@@ -1,21 +1,15 @@
 from dataclasses import dataclass
-from typing import List, Optional
-from streamlit_js_eval import get_geolocation
+from math import radians
+from typing import List, Optional, Tuple
 
 import numpy as np
 import streamlit as st
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_distances
+from sklearn.metrics.pairwise import cosine_distances, haversine_distances
+from streamlit_js_eval import get_geolocation
 
-from ds_types import Establishment
 from get_parsed import get_parsed_establishments
 from views.search_results import search_results
-from typing import Tuple
-import pandas as pd
-
-from math import radians
-from typing import List, Tuple
-from sklearn.metrics.pairwise import haversine_distances
 
 SHOW_TOP_N_RELEVANT = 10
 
@@ -44,21 +38,13 @@ def parse_geolocation(d) -> GeoLocation:
     )
 
 
-def get_closest_indices(
+def get_name_distances(
     search_term: str,
     tfidf: TfidfVectorizer,
     source_vecs: np.ndarray,
-) -> List[int]:
+) -> List[float]:
     search_term_vecs = tfidf.transform([search_term])
-    distances = [
-        (i, d)
-        for i, d in enumerate(cosine_distances(
-            source_vecs,
-            search_term_vecs
-        ).reshape(-1))
-    ]
-    closest_first = sorted(distances, key=lambda x: x[1])
-    return [x[0] for x in closest_first]
+    return list(cosine_distances(source_vecs, search_term_vecs).reshape(-1))
 
 
 st.markdown('''
@@ -96,6 +82,18 @@ search_term = st.text_input(
 )
 
 
+name_distances = [1. for _ in establishments]
+establishment_distances = [1. for _ in establishments]
+
+if len(search_term) > 0:
+    name_distances = get_name_distances(
+        search_term=search_term,
+        tfidf=tfidf,
+        source_vecs=establishment_vecs
+    )
+    name_distances = name_distances / max(name_distances)
+
+
 def get_haversine_distances(
     center_loc: Tuple[float, float],
     locs: List[Tuple[float, float]]
@@ -108,37 +106,40 @@ def get_haversine_distances(
     return list(haversine_distances(X=locs, Y=center_loc)[:, 0])
 
 
-# if st.checkbox("Near me"):
-#     geolocation = parse_geolocation(get_geolocation())
-#     # st.write(
-#     #     f"Your coordinates are {geolocation.coords.latitude:.4f}, {geolocation.coords.longitude:.4f}")
+geolocation = None
+if st.checkbox("Near me"):
+    geolocation = parse_geolocation(get_geolocation())
+    st.write(f"Centering on {geolocation.coords.latitude:.4f}, {geolocation.coords.longitude:.4f}")
 
-#     establishment_locs = [
-#         [establishment.latitude, establishment.longitude]
-#         for establishment in establishments
-#     ]
-#     establishment_distances = get_haversine_distances(
-#         center_loc=[geolocation.coords.latitude, geolocation.coords.longitude],
-#         locs=establishment_locs,
-#     )
-
-#     st.map(
-#         data=pd.DataFrame({
-#             'lat': [geolocation.coords.latitude],
-#             'lon': [geolocation.coords.longitude],
-#         }),
-#         zoom=17,
-#     )
-
-
-most_relevant_establishments: List[Establishment] = establishments[:SHOW_TOP_N_RELEVANT]
-if len(search_term) > 0:
-    most_relevant_establishments: List[Establishment] = [
-        establishments[i] for i in get_closest_indices(
-            search_term=search_term,
-            tfidf=tfidf,
-            source_vecs=establishment_vecs
-        )[:SHOW_TOP_N_RELEVANT]
+    establishment_locs = [
+        [establishment.latitude, establishment.longitude]
+        for establishment in establishments
     ]
+    establishment_distances = get_haversine_distances(
+        center_loc=[geolocation.coords.latitude, geolocation.coords.longitude],
+        locs=establishment_locs,
+    )
+    establishment_distances = establishment_distances / max(establishment_distances)
+
+
+composite_distances = [a + b for a, b in zip(name_distances, establishment_distances)]
+most_relevant_establishments = [
+    est for _, est in sorted(
+        zip(composite_distances, establishments),
+        key=lambda pair: pair[0]
+    )
+]
+most_relevant_establishments = most_relevant_establishments[:SHOW_TOP_N_RELEVANT]
+
 
 search_results(most_relevant=most_relevant_establishments)
+
+
+# if geolocation is not None:
+#     st.map(
+#         data=pd.DataFrame([
+#             {'lat': establishment.latitude, 'lon': establishment.longitude}
+#             for establishment in most_relevant_establishments
+#         ]),
+#         # zoom=17,
+#     )
