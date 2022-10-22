@@ -137,7 +137,7 @@ most_relevant_establishments = [
 ]
 most_relevant_establishments = most_relevant_establishments[:SHOW_TOP_N_RELEVANT]
 
-
+st.markdown('----')
 search_results(most_relevant=most_relevant_establishments)
 
 
