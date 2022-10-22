@@ -1,7 +1,10 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
+import numpy as np
 import streamlit as st
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_distances
 
 from ds_types import YMD_FORMAT, Establishment, Inspection
 from get_parsed import get_parsed_establishments
@@ -31,10 +34,16 @@ def parse_geolocation(d) -> GeoLocation:
     )
 
 
-def get_similarity(search_term: str, establishment: Establishment) -> float:
-    search_terms = search_term.lower().split()
-    estab_name = establishment.name.lower()
-    return len([s for s in search_terms if s in estab_name]) / len(search_terms)
+def get_closest_indices(
+    search_term: str,
+    tfidf: TfidfVectorizer,
+    source_vecs: np.ndarray,
+) -> List[int]:
+    search_term_vecs = tfidf.transform([search_term])
+    distances = [(i, d) for i, d in enumerate(
+        cosine_distances(source_vecs, search_term_vecs).reshape(-1))]
+    closest = sorted(distances, key=lambda x: x[1])[:10]
+    return [x[0] for x in closest]
 
 
 st.markdown('''
@@ -46,7 +55,12 @@ if st.button('Refresh data'):
     with open('get_data.py') as f:
         exec(f.read())
 
+
 establishments = get_parsed_establishments()
+with st.spinner(f'Indexing {len(establishments)} establishments...'):
+    establishment_names = [est.name for est in establishments]
+    tfidf = TfidfVectorizer().fit(establishment_names)
+    establishment_vecs = tfidf.transform(establishment_names)
 
 search_term = st.text_input(
     label=f'Search for business name (out of {len(establishments)})',
@@ -54,11 +68,13 @@ search_term = st.text_input(
     help='Just enter some words on the business name correctly.'
 )
 
-closest_establishments: List[Establishment] = sorted(
-    establishments,
-    key=lambda estab: get_similarity(search_term=search_term, establishment=estab),
-    reverse=True
-)
+closest_establishments: List[Establishment] = [
+    establishments[i] for i in get_closest_indices(
+        search_term=search_term,
+        tfidf=tfidf,
+        source_vecs=establishment_vecs
+    )
+]
 
 summary_md_str = '''
 **{name}**
