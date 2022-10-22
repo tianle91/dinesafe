@@ -57,6 +57,12 @@ if st.button('Refresh data'):
 
 
 establishments = get_parsed_establishments()
+
+if len(establishments) == 0:
+    st.warning('No establishments loaded. Please refresh data')
+    st.stop()
+
+
 with st.spinner(f'Indexing {len(establishments)} establishments...'):
     establishment_names = [est.name for est in establishments]
     tfidf = TfidfVectorizer().fit(establishment_names)
