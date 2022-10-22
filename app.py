@@ -82,7 +82,7 @@ search_term = st.text_input(
     help='Just enter some words on the business name correctly.'
 )
 
-closest_establishments: List[Establishment] = [
+most_relevant_establishments: List[Establishment] = [
     establishments[i] for i in get_closest_indices(
         search_term=search_term,
         tfidf=tfidf,
@@ -90,7 +90,7 @@ closest_establishments: List[Establishment] = [
     )
 ]
 
-search_results(closest_establishments=closest_establishments)
+search_results(most_relevant=most_relevant_establishments)
 
 # from streamlit_js_eval import get_geolocation
 # if st.checkbox("Center on my location"):

@@ -13,8 +13,8 @@ summary_md_str = '''
 '''
 
 
-def search_results(closest_establishments: List[Establishment]):
-    for establishment in closest_establishments[:10]:
+def search_results(most_relevant: List[Establishment]):
+    for establishment in most_relevant[:10]:
         latest_inspections: List[Inspection] = sorted(
             establishment.inspection,
             key=lambda insp: insp.date,
