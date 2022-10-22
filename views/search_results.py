@@ -5,7 +5,7 @@ import streamlit as st
 from ds_types import YMD_FORMAT, Establishment, Inspection
 
 summary_md_str = '''
-**{name}**
+#### **{name}**
 *Address: {address}*
 
 *{status}*
@@ -37,6 +37,8 @@ def search_results(most_relevant: List[Establishment]):
             status=establishment.status,
             last_inspection_dt_str=last_inspection_dt_str,
         )
+        if len(last_inspection_deficiencies) > 0:
+            md_str += '\nDeficiencies:'
         for s in last_inspection_deficiencies:
             md_str += f'\n* {s}'
         st.markdown(md_str)

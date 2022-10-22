@@ -109,7 +109,8 @@ def get_haversine_distances(
 geolocation = None
 if st.checkbox("Near me"):
     geolocation = parse_geolocation(get_geolocation())
-    st.write(f"Centering on {geolocation.coords.latitude:.4f}, {geolocation.coords.longitude:.4f}")
+    st.success(
+        f"Centering on {geolocation.coords.latitude:.4f}, {geolocation.coords.longitude:.4f}")
 
     establishment_locs = [
         [establishment.latitude, establishment.longitude]
