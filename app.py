@@ -4,7 +4,7 @@ from typing import List, Optional
 import streamlit as st
 
 from ds_types import YMD_FORMAT, Establishment, Inspection
-from get_parsed import establishments
+from get_parsed import get_parsed_establishments
 
 
 @dataclass
@@ -37,8 +37,16 @@ def get_similarity(search_term: str, establishment: Establishment) -> float:
     return len([s for s in search_terms if s in estab_name]) / len(search_terms)
 
 
-st.title('Dinesafe')
+st.markdown('''
+# DinesafeTO
+Data is taken from [open.toronto.ca](https://open.toronto.ca/dataset/dinesafe/).
+''')
 
+if st.button('Refresh data'):
+    with open('get_data.py') as f:
+        exec(f.read())
+
+establishments = get_parsed_establishments()
 
 search_term = st.text_input(
     label=f'Search for business name (out of {len(establishments)})',
