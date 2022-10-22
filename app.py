@@ -6,8 +6,10 @@ import streamlit as st
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_distances
 
-from ds_types import YMD_FORMAT, Establishment, Inspection
+from ds_types import Establishment
 from get_parsed import get_parsed_establishments
+from views.search_results import search_results
+from typing import Tuple
 
 
 @dataclass
@@ -63,10 +65,16 @@ if len(establishments) == 0:
     st.stop()
 
 
-with st.spinner(f'Indexing {len(establishments)} establishments...'):
-    establishment_names = [est.name for est in establishments]
+@st.cache(ttl=86400)  # 1 day ttl
+def get_tfidfs(establishment_names: List[str]) -> Tuple[TfidfVectorizer, np.ndarray]:
     tfidf = TfidfVectorizer().fit(establishment_names)
     establishment_vecs = tfidf.transform(establishment_names)
+    return tfidf, establishment_vecs
+
+
+with st.spinner(f'Indexing {len(establishments)} establishments...'):
+    establishment_names = [est.name for est in establishments]
+    tfidf, establishment_vecs = get_tfidfs(establishment_names=establishment_names)
 
 search_term = st.text_input(
     label=f'Search for business name (out of {len(establishments)})',
@@ -82,39 +90,7 @@ closest_establishments: List[Establishment] = [
     )
 ]
 
-summary_md_str = '''
-**{name}**
-*Address: {address}*
-
-*{status}*
-*(Last inspected on: {last_inspection_dt_str})*
-'''
-
-for establishment in closest_establishments[:10]:
-    latest_inspections: List[Inspection] = sorted(
-        establishment.inspection,
-        key=lambda insp: insp.date,
-        reverse=True
-    )
-    last_inspection = latest_inspections[0] if len(latest_inspections) > 0 else None
-
-    last_inspection_dt_str = 'NA'
-    if last_inspection is not None:
-        last_inspection_dt_str = last_inspection.date.strftime(YMD_FORMAT)
-        last_inspection_deficiencies = [
-            infraction.deficiency
-            for infraction in last_inspection.infraction
-        ]
-
-    md_str = summary_md_str.format(
-        name=establishment.name,
-        address=establishment.address,
-        status=establishment.status,
-        last_inspection_dt_str=last_inspection_dt_str,
-    )
-    for s in last_inspection_deficiencies:
-        md_str += f'\n* {s}'
-    st.markdown(md_str)
+search_results(closest_establishments=closest_establishments)
 
 # from streamlit_js_eval import get_geolocation
 # if st.checkbox("Center on my location"):
