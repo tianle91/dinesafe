@@ -1,16 +1,24 @@
+from pathlib import Path
+from typing import List
+
 import xmltodict
 
-from ds_types import get_establishment
-
-with open('ds_od_xml.xml') as f:
-    ds_d = xmltodict.parse(f.read())
+from ds_types import Establishment, get_establishment
 
 
-establishments = []
-for i, d in enumerate(ds_d['DINESAFE_DATA']['ESTABLISHMENT']):
-    try:
-        establishments.append(get_establishment(d))
-    except Exception as e:
-        print(e)
-        print(d)
-        break
+def get_parsed_establishments(p='ds_od_xml.xml') -> List[Establishment]:
+
+    establishment_l = []
+    if Path(p).is_file():
+        with open(p) as f:
+            establishment_l = xmltodict.parse(f.read())['DINESAFE_DATA']['ESTABLISHMENT']
+        establishments = []
+        for d in establishment_l:
+            try:
+                establishments.append(get_establishment(d))
+            except Exception as e:
+                print(e)
+                print(d)
+                break
+        return establishments
+    return []
