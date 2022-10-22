@@ -9,6 +9,7 @@ from sklearn.metrics.pairwise import cosine_distances, haversine_distances
 from streamlit_js_eval import get_geolocation
 
 from get_parsed import get_parsed_establishments
+from views.map_results import map_results
 from views.search_results import search_results
 
 SHOW_TOP_N_RELEVANT = 10
@@ -76,7 +77,7 @@ with st.spinner(f'Indexing {len(establishments)} establishments...'):
     tfidf, establishment_vecs = get_tfidfs(establishment_names=establishment_names)
 
 search_term = st.text_input(
-    label=f'Search for business name (out of {len(establishments)})',
+    label='Search for business name (leave empty for all businesses)',
     value='New Hong Fatt',
     help='Just enter some words on the business name correctly.'
 )
@@ -137,15 +138,11 @@ most_relevant_establishments = [
 ]
 most_relevant_establishments = most_relevant_establishments[:SHOW_TOP_N_RELEVANT]
 
+if geolocation is not None:
+    st.markdown('----')
+    map_results(
+        most_relevant=most_relevant_establishments,
+        center_loc=[geolocation.coords.latitude, geolocation.coords.longitude],
+    )
 st.markdown('----')
 search_results(most_relevant=most_relevant_establishments)
-
-
-# if geolocation is not None:
-#     st.map(
-#         data=pd.DataFrame([
-#             {'lat': establishment.latitude, 'lon': establishment.longitude}
-#             for establishment in most_relevant_establishments
-#         ]),
-#         # zoom=17,
-#     )
