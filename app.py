@@ -52,28 +52,39 @@ closest_establishments: List[Establishment] = sorted(
     reverse=True
 )
 
+summary_md_str = '''
+**{name}**
+*Address: {address}*
+
+*{status}*
+*(Last inspected on: {last_inspection_dt_str})*
+'''
+
 for establishment in closest_establishments[:10]:
     latest_inspections: List[Inspection] = sorted(
         establishment.inspection,
         key=lambda insp: insp.date,
         reverse=True
     )
-    latest_inspection = latest_inspections[0] if len(latest_inspections) > 0 else None
+    last_inspection = latest_inspections[0] if len(latest_inspections) > 0 else None
 
-    summary_md_str = f'''
-    **{establishment.name}**
-    *Address: {establishment.address}*
-    '''
+    last_inspection_dt_str = 'NA'
+    if last_inspection is not None:
+        last_inspection_dt_str = last_inspection.date.strftime(YMD_FORMAT)
+        last_inspection_deficiencies = [
+            infraction.deficiency
+            for infraction in last_inspection.infraction
+        ]
 
-    if latest_inspection is None:
-        continue
-    else:
-        summary_md_str += f'''
-        *{establishment.status}*
-        *(Last inspected on: {latest_inspection.date.strftime(YMD_FORMAT)})*
-        '''
-
-    st.markdown(summary_md_str)
+    md_str = summary_md_str.format(
+        name=establishment.name,
+        address=establishment.address,
+        status=establishment.status,
+        last_inspection_dt_str=last_inspection_dt_str,
+    )
+    for s in last_inspection_deficiencies:
+        md_str += f'\n* {s}'
+    st.markdown(md_str)
 
 # from streamlit_js_eval import get_geolocation
 # if st.checkbox("Center on my location"):
