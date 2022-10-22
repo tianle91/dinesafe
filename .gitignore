@@ -132,4 +132,7 @@ dmypy.json
 .DS_Store
 
 # data
-*.xml
+ds_od_xml.xml
+
+# secrets
+.streamlit/config.toml
