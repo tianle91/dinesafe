@@ -8,8 +8,10 @@ summary_md_str = '''
 #### **{name}**
 *Address: {address}*
 
-*{status}*
-*(Last inspected on: {last_inspection_dt_str})*
+<p style="color:{status_color}">
+    {status}
+    (Last inspected on: {last_inspection_dt_str})
+</p>
 '''
 
 
@@ -31,14 +33,21 @@ def search_results(most_relevant: List[Establishment]):
                 for infraction in last_inspection.infraction
             ]
 
+        status_color = 'Green' if establishment.status.lower() == 'pass' else 'Red'
         md_str = summary_md_str.format(
             name=establishment.name,
             address=establishment.address,
+            status_color=status_color,
             status=establishment.status,
             last_inspection_dt_str=last_inspection_dt_str,
         )
+        st.markdown(md_str, unsafe_allow_html=True)
+
         if len(last_inspection_deficiencies) > 0:
-            md_str += '\nDeficiencies:'
-        for s in last_inspection_deficiencies:
-            md_str += f'\n* {s}'
-        st.markdown(md_str)
+            with st.expander(f'Found {len(last_inspection_deficiencies)} deficiencies'):
+                md_str = ''
+                for deficiency_str in last_inspection_deficiencies:
+                    md_str += f'* {deficiency_str}\n'
+                st.markdown(md_str)
+
+        st.markdown('----')

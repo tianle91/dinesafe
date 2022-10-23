@@ -48,17 +48,19 @@ def get_name_distances(
     return list(cosine_distances(source_vecs, search_term_vecs).reshape(-1))
 
 
-st.markdown('''
-# DinesafeTO
-Data is taken from [open.toronto.ca](https://open.toronto.ca/dataset/dinesafe/).
-''')
-
-if st.button('Refresh data'):
-    with open('get_data.py') as f:
-        exec(f.read())
+st.title('DinesafeTO')
 
 
 establishments = get_parsed_establishments()
+
+
+with st.sidebar:
+    st.markdown('Data is taken from [open.toronto.ca](https://open.toronto.ca/dataset/dinesafe/).')
+    if st.button('Refresh data'):
+        with open('get_data.py') as f:
+            exec(f.read())
+    st.markdown(f'{len(establishments)} establishments loaded.')
+
 
 if len(establishments) == 0:
     st.warning('No establishments loaded. Please refresh data')
