@@ -12,7 +12,7 @@ from get_parsed import get_parsed_establishments
 from views.map_results import map_results
 from views.search_results import search_results
 
-SHOW_TOP_N_RELEVANT = 10
+SHOW_TOP_N_RELEVANT = 5
 
 
 @dataclass
