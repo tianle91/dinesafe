@@ -139,14 +139,23 @@ if geolocation is not None:
     establishment_distances = establishment_distances / max(establishment_distances)
 
 
-composite_distances = [a + b for a, b in zip(name_distances, establishment_distances)]
-most_relevant_establishments = [
-    est for _, est in sorted(
-        zip(composite_distances, establishments),
-        key=lambda pair: pair[0]
-    )
-]
-most_relevant_establishments = most_relevant_establishments[:SHOW_TOP_N_RELEVANT]
+# find most relevant establishments
+composite_distances = [(a + b) / 2 for a, b in zip(name_distances, establishment_distances)]
+pairs_by_most_relevant = sorted(
+    zip(composite_distances, establishments),
+    key=lambda pair: pair[0]
+)
+
+min_dist = pairs_by_most_relevant[0][0]
+min_dist_limit = min_dist * 1.2
+
+most_relevant_establishments = []
+for d, est in pairs_by_most_relevant:
+    if d < min_dist_limit:
+        most_relevant_establishments.append(est)
+    else:
+        break
+
 
 if geolocation is not None:
     st.markdown('----')
