@@ -8,7 +8,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_distances, haversine_distances
 from streamlit_js_eval import get_geolocation
 
-from get_parsed import get_parsed_establishments
+from get_data import get_downloaded_fname
+from get_parsed import DEFAULT_XML_FNAME, get_parsed_establishments
 from views.map_results import map_results
 from views.search_results import search_results
 
@@ -51,14 +52,21 @@ def get_name_distances(
 st.title('DinesafeTO')
 
 
-establishments = get_parsed_establishments()
+@st.experimental_singleton
+def get_parsed_establishments_cached():
+    return get_parsed_establishments()
+
+
+establishments = get_parsed_establishments_cached()
 
 
 with st.sidebar:
     st.markdown('Data is taken from [open.toronto.ca](https://open.toronto.ca/dataset/dinesafe/).')
     if st.button('Refresh data'):
-        with open('get_data.py') as f:
-            exec(f.read())
+        with st.spinner('Refreshing data...'):
+            assert get_downloaded_fname() == DEFAULT_XML_FNAME
+        st.experimental_singleton.clear()
+        establishments = get_parsed_establishments_cached()
     st.markdown(f'{len(establishments)} establishments loaded.')
 
 
@@ -67,7 +75,7 @@ if len(establishments) == 0:
     st.stop()
 
 
-@st.cache(ttl=86400)  # 1 day ttl
+@st.experimental_singleton
 def get_tfidfs(establishment_names: List[str]) -> Tuple[TfidfVectorizer, np.ndarray]:
     tfidf = TfidfVectorizer().fit(establishment_names)
     establishment_vecs = tfidf.transform(establishment_names)

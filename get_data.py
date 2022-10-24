@@ -1,5 +1,10 @@
+import os
+from glob import glob
+
 import requests
 import wget
+
+from get_parsed import DEFAULT_XML_FNAME
 
 # Toronto Open Data is stored in a CKAN instance. It's APIs are documented here:
 # https://docs.ckan.org/en/latest/api/
@@ -24,6 +29,18 @@ for idx, resource in enumerate(package["result"]["resources"]):
         # From here, you can use the "url" attribute to download this file
 
 
-url = resource_metadata['result']['url']
-filename = wget.download(url)
-print(f'Downloaded dinesafe data to: {filename}')
+def get_downloaded_fname():
+
+    print('Removing all xml files...')
+    for p in glob('*.xml'):
+        print(f'removing {p}')
+        os.remove(p)
+
+    url = resource_metadata['result']['url']
+    filename = wget.download(url, out=DEFAULT_XML_FNAME)
+    return filename
+
+
+if __name__ == '__main__':
+    filename = get_downloaded_fname()
+    print(f'Downloaded dinesafe data to: {filename}')

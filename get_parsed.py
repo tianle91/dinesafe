@@ -5,9 +5,10 @@ import xmltodict
 
 from ds_types import Establishment, get_establishment
 
+DEFAULT_XML_FNAME = 'ds_od_xml.xml'
 
-def get_parsed_establishments(p='ds_od_xml.xml') -> List[Establishment]:
 
+def get_parsed_establishments(p=DEFAULT_XML_FNAME) -> List[Establishment]:
     establishment_l = []
     if Path(p).is_file():
         with open(p) as f:
@@ -21,4 +22,6 @@ def get_parsed_establishments(p='ds_od_xml.xml') -> List[Establishment]:
                 print(d)
                 break
         return establishments
+    else:
+        print(f'File not found {p}')
     return []
