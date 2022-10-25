@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import pandas as pd
 import pydeck
@@ -54,24 +54,10 @@ self_icon_data = {
 }
 
 
-def map_results(most_relevant: List[Establishment], center_loc: Tuple[float, float]):
-    lat, lon = center_loc
-    self_df = pd.DataFrame([{
-        'lon': lon,
-        'lat': lat,
-        'name': 'Your Location',
-        'status': '',
-        'icon_data': self_icon_data
-    }])
-    self_layer = pydeck.Layer(
-        'IconLayer',
-        data=self_df,
-        get_icon="icon_data",
-        size_scale=30,
-        get_position=["lon", "lat"],
-        pickable=False,
-    )
-
+def map_results(
+    most_relevant: List[Establishment],
+    center_loc: Optional[Tuple[float, float]] = None
+):
     establishment_df = pd.DataFrame(data=[
         {
             'lon': est.longitude,
@@ -91,12 +77,33 @@ def map_results(most_relevant: List[Establishment], center_loc: Tuple[float, flo
         pickable=True,
     )
 
+    if center_loc is not None:
+        lat, lon = center_loc
+        self_df = pd.DataFrame([{
+            'lon': lon,
+            'lat': lat,
+            'name': 'Your Location',
+            'status': '',
+            'icon_data': self_icon_data
+        }])
+        self_layer = pydeck.Layer(
+            'IconLayer',
+            data=self_df,
+            get_icon="icon_data",
+            size_scale=30,
+            get_position=["lon", "lat"],
+            pickable=False,
+        )
+        layers = [self_layer, establishment_layer]
+        points = pd.concat([self_df, establishment_df], axis=0)
+    else:
+        layers = [establishment_layer]
+        points = establishment_df
+
     r = pydeck.Deck(
-        layers=[self_layer, establishment_layer],
+        layers=layers,
         map_style='road',
-        initial_view_state=pydeck.data_utils.compute_view(
-            points=pd.concat([self_df, establishment_df], axis=0),
-        ),
+        initial_view_state=pydeck.data_utils.compute_view(points=points),
         tooltip={
             'html': '{name} ({status})',
             'style': {

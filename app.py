@@ -13,7 +13,7 @@ from get_parsed import DEFAULT_XML_FNAME, get_parsed_establishments
 from views.map_results import map_results
 from views.search_results import search_results
 
-SHOW_TOP_N_RELEVANT = 5
+SHOW_TOP_N_RELEVANT = 10
 
 
 @dataclass
@@ -158,11 +158,13 @@ most_relevant_establishments = sorted(
 most_relevant_establishments = [est for est, _ in most_relevant_establishments]
 
 
-if geolocation is not None:
-    st.markdown('----')
-    map_results(
-        most_relevant=most_relevant_establishments,
-        center_loc=[geolocation.coords.latitude, geolocation.coords.longitude],
-    )
+st.markdown('----')
+map_results(
+    most_relevant=most_relevant_establishments,
+    center_loc=(
+        [geolocation.coords.latitude, geolocation.coords.longitude]
+        if geolocation is not None else None
+    ),
+)
 st.markdown('----')
 search_results(most_relevant=most_relevant_establishments)
