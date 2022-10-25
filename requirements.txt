@@ -1,6 +1,6 @@
-pandas
-scikit-learn
-streamlit
-streamlit_js_eval
-xmltodict
-wget
+pandas==1.5.1
+scikit-learn==1.1.2
+streamlit==1.13.0
+streamlit-js-eval==0.1.5
+xmltodict==0.13.0
+wget==3.2
