@@ -57,8 +57,10 @@ self_icon_data = {
 def map_results(most_relevant: List[Establishment], center_loc: Tuple[float, float]):
     lat, lon = center_loc
     self_df = pd.DataFrame([{
-        'lat': lat,
         'lon': lon,
+        'lat': lat,
+        'name': 'Your Location',
+        'status': '',
         'icon_data': self_icon_data
     }])
     self_layer = pydeck.Layer(
@@ -92,7 +94,9 @@ def map_results(most_relevant: List[Establishment], center_loc: Tuple[float, flo
     r = pydeck.Deck(
         layers=[self_layer, establishment_layer],
         map_style='road',
-        initial_view_state=pydeck.data_utils.compute_view(points=establishment_df),
+        initial_view_state=pydeck.data_utils.compute_view(
+            points=pd.concat([self_df, establishment_df], axis=0),
+        ),
         tooltip={
             'html': '{name} ({status})',
             'style': {
