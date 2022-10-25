@@ -102,7 +102,12 @@ if len(search_term) > 0:
         tfidf=tfidf,
         source_vecs=establishment_vecs
     )
-    name_distances = name_distances / max(name_distances)
+    # normalize to range: 1, 2
+    name_distances_min = min(name_distances)
+    name_distances_max = max(name_distances)
+    name_distances_mid = .5 * (name_distances_min + name_distances_max)
+    name_distances_range = name_distances_max - name_distances_min
+    name_distances = (name_distances - name_distances_mid) / (name_distances_range / 2) + 2
 
 
 def get_haversine_distances(
@@ -136,25 +141,20 @@ if geolocation is not None:
         center_loc=[geolocation.coords.latitude, geolocation.coords.longitude],
         locs=establishment_locs,
     )
+    # normalize to range: 0, 1
     establishment_distances = establishment_distances / max(establishment_distances)
 
 
 # find most relevant establishments
-composite_distances = [(a + b) / 2 for a, b in zip(name_distances, establishment_distances)]
-pairs_by_most_relevant = sorted(
-    zip(composite_distances, establishments),
-    key=lambda pair: pair[0]
-)
-
-min_dist = pairs_by_most_relevant[0][0]
-min_dist_limit = min_dist * 1.2
-
 most_relevant_establishments = []
-for d, est in pairs_by_most_relevant:
-    if d < min_dist_limit:
-        most_relevant_establishments.append(est)
-    else:
-        break
+for est, d_name, d_estab in zip(establishments, name_distances, establishment_distances):
+    if d_name < 1.2:
+        most_relevant_establishments.append((est, d_estab))
+most_relevant_establishments = sorted(
+    most_relevant_establishments,
+    key=lambda x: x[1]
+)[:SHOW_TOP_N_RELEVANT]
+most_relevant_establishments = [est for est, _ in most_relevant_establishments]
 
 
 if geolocation is not None:
