@@ -7,7 +7,7 @@ import streamlit as st
 from ds_types import Establishment
 
 establishment_icon_data_default = {
-    "url": "https://upload.wikimedia.org/wikipedia/commons/6/64/Icone_Vermelho.svg",
+    "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/default.svg",
     "width": 242,
     "height": 242,
     "anchorY": 242,
@@ -15,31 +15,31 @@ establishment_icon_data_default = {
 
 establishment_icon_data_by_ranking = {
     0: {
-        "url": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Eo_circle_deep-orange_number-1.svg",
+        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/1.svg",
         "width": 242,
         "height": 242,
         "anchorY": 242,
     },
     1: {
-        "url": "https://upload.wikimedia.org/wikipedia/commons/8/85/Eo_circle_deep-orange_number-2.svg",
+        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/2.svg",
         "width": 242,
         "height": 242,
         "anchorY": 242,
     },
     2: {
-        "url": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Eo_circle_deep-orange_number-3.svg",
+        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/3.svg",
         "width": 242,
         "height": 242,
         "anchorY": 242,
     },
     3: {
-        "url": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Eo_circle_deep-orange_white_number-4.svg",
+        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/4.svg",
         "width": 242,
         "height": 242,
         "anchorY": 242,
     },
     4: {
-        "url": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Eo_circle_deep-orange_number-5.svg",
+        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/5.svg",
         "width": 242,
         "height": 242,
         "anchorY": 242,
@@ -47,7 +47,7 @@ establishment_icon_data_by_ranking = {
 }
 
 self_icon_data = {
-    "url": "https://upload.wikimedia.org/wikipedia/commons/3/35/Location_dot_blue.svg",
+    "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/self.svg",
     "width": 242,
     "height": 242,
     "anchorY": 242,
