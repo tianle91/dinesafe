@@ -5,7 +5,7 @@ import streamlit as st
 from ds_types import YMD_FORMAT, Establishment, Inspection
 
 summary_md_str = '''
-#### **{name}**
+#### {rank}. **{name}**
 *Address: {address}*
 
 <p style="color:{status_color}">
@@ -16,7 +16,7 @@ summary_md_str = '''
 
 
 def search_results(most_relevant: List[Establishment]):
-    for establishment in most_relevant[:10]:
+    for i, establishment in enumerate(most_relevant):
         latest_inspections: List[Inspection] = sorted(
             establishment.inspection,
             key=lambda insp: insp.date,
@@ -35,6 +35,7 @@ def search_results(most_relevant: List[Establishment]):
 
         status_color = 'Green' if establishment.status.lower() == 'pass' else 'Red'
         md_str = summary_md_str.format(
+            rank=i + 1,
             name=establishment.name,
             address=establishment.address,
             status_color=status_color,
