@@ -68,6 +68,7 @@ with st.sidebar:
         st.experimental_singleton.clear()
         establishments = get_parsed_establishments_cached()
     st.markdown(f'{len(establishments)} establishments loaded.')
+    st.markdown('''[tianle91/dinesafe](https://github.com/tianle91/dinesafe)''')
 
 
 if len(establishments) == 0:
