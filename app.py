@@ -130,10 +130,6 @@ if st.checkbox("Near me"):
         geolocation = parse_geolocation(geo_d)
 
 if geolocation is not None:
-    st.success(
-        'Centering on '
-        f"{geolocation.coords.latitude:.4f}, {geolocation.coords.longitude:.4f}"
-    )
     establishment_locs = [
         [establishment.latitude, establishment.longitude]
         for establishment in establishments
@@ -161,10 +157,10 @@ most_relevant_establishments = [
     est for est, _ in most_relevant_establishments[:SHOW_TOP_N_RELEVANT]
 ]
 if will_be_truncated:
-    st.warning(
-        f'Showing top {SHOW_TOP_N_RELEVANT} out of {num_close_names}.\n'
-        'For more relevant results, consider clicking "Near Me".'
-    )
+    warning_message = f'Showing top {SHOW_TOP_N_RELEVANT} out of {num_close_names}. '
+    if geolocation is None:
+        warning_message += 'For more relevant results, consider clicking "Near Me".'
+    st.warning(warning_message)
 
 st.markdown('----')
 map_results(
