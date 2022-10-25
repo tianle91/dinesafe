@@ -154,9 +154,17 @@ for est, d_name, d_estab in zip(establishments, name_distances, establishment_di
 most_relevant_establishments = sorted(
     most_relevant_establishments,
     key=lambda x: x[1]
-)[:SHOW_TOP_N_RELEVANT]
-most_relevant_establishments = [est for est, _ in most_relevant_establishments]
-
+)
+num_close_names = len(most_relevant_establishments)
+will_be_truncated = num_close_names > SHOW_TOP_N_RELEVANT
+most_relevant_establishments = [
+    est for est, _ in most_relevant_establishments[:SHOW_TOP_N_RELEVANT]
+]
+if will_be_truncated:
+    st.warning(
+        f'Showing top {SHOW_TOP_N_RELEVANT} out of {num_close_names}.\n'
+        'For more relevant results, consider clicking "Near Me".'
+    )
 
 st.markdown('----')
 map_results(
