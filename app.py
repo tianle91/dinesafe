@@ -1,15 +1,18 @@
+import time
 from dataclasses import dataclass
 from math import radians
 from typing import List, Optional, Tuple
 
 import numpy as np
 import streamlit as st
+from humanfriendly import format_timespan
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_distances, haversine_distances
 from streamlit_js_eval import get_geolocation
 
-from get_data import get_downloaded_fname
-from get_parsed import DEFAULT_XML_FNAME, get_parsed_establishments
+from get_data import (LAST_DOWNLOADED_TIMESTAMP_FILE, REFRESH_SECONDS,
+                      refresh_xml_file, refresh_xml_file_if_stale)
+from get_parsed import get_parsed_establishments
 from views.map_results import map_results
 from views.search_results import search_results
 
@@ -59,16 +62,23 @@ def get_parsed_establishments_cached():
 
 establishments = get_parsed_establishments_cached()
 
-
+refresh_xml_file_if_stale()
 with st.sidebar:
     st.markdown('Data is taken from [open.toronto.ca](https://open.toronto.ca/dataset/dinesafe/).')
     if st.button('Refresh data'):
         with st.spinner('Refreshing data...'):
-            assert get_downloaded_fname() == DEFAULT_XML_FNAME
-        st.experimental_singleton.clear()
-        establishments = get_parsed_establishments_cached()
-    st.markdown(f'{len(establishments)} establishments loaded.')
-    st.markdown('''[tianle91/dinesafe](https://github.com/tianle91/dinesafe)''')
+            refresh_xml_file()
+            st.experimental_singleton.clear()
+    with open(LAST_DOWNLOADED_TIMESTAMP_FILE) as f:
+        last_downloaded_ts = float(f.read())
+        seconds_till_refresh = last_downloaded_ts + REFRESH_SECONDS - time.time()
+        # round to minutes
+        minutes_till_refresh = int(seconds_till_refresh / 60)
+    st.markdown(
+        f'{len(establishments)} establishments loaded. \n\n'
+        f'Next refresh in {format_timespan(num_seconds=60*minutes_till_refresh)}. \n\n'
+        'Github: [tianle91/dinesafe](https://github.com/tianle91/dinesafe)'
+    )
 
 
 if len(establishments) == 0:

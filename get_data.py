@@ -1,4 +1,5 @@
 import os
+import time
 from glob import glob
 
 import requests
@@ -6,9 +7,11 @@ import wget
 
 from get_parsed import DEFAULT_XML_FNAME
 
+LAST_DOWNLOADED_TIMESTAMP_FILE = 'LAST_DOWNLOADED_TIMESTAMP_FILE.txt'
+REFRESH_SECONDS = 43200  # 12 hours
 
-def get_downloaded_fname():
 
+def get_url() -> str:
     # get resource_metadata
 
     # Toronto Open Data is stored in a CKAN instance. It's APIs are documented here:
@@ -33,16 +36,35 @@ def get_downloaded_fname():
             print(resource_metadata)
             # From here, you can use the "url" attribute to download this file
 
+    return resource_metadata['result']['url']
+
+
+def refresh_xml_file():
     print('Removing all xml files...')
     for p in glob('*.xml'):
         print(f'removing {p}')
         os.remove(p)
 
-    url = resource_metadata['result']['url']
-    filename = wget.download(url, out=DEFAULT_XML_FNAME)
-    return filename
+    url = get_url()
+    wget.download(url, out=DEFAULT_XML_FNAME)
+
+    with open(LAST_DOWNLOADED_TIMESTAMP_FILE, 'w') as f:
+        now_ts = time.time()
+        f.write(str(now_ts))
+
+
+def refresh_xml_file_if_stale():
+    is_stale = False
+    if not os.path.isfile(LAST_DOWNLOADED_TIMESTAMP_FILE):
+        is_stale = True
+    else:
+        with open(LAST_DOWNLOADED_TIMESTAMP_FILE) as f:
+            last_downloaded_ts = float(f.read())
+        if (time.time() - last_downloaded_ts) > REFRESH_SECONDS:
+            is_stale = True
+    if is_stale:
+        refresh_xml_file()
 
 
 if __name__ == '__main__':
-    filename = get_downloaded_fname()
-    print(f'Downloaded dinesafe data to: {filename}')
+    refresh_xml_file()
