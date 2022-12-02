@@ -6,7 +6,11 @@ import requests_cache
 
 from ds_types import Establishment
 
-requests_cache.install_cache(backend='memory', urls_expire_after={'*': 86400})
+requests_cache.install_cache(
+    backend='sqlite',
+    # 1 day
+    urls_expire_after={'*': 86400}
+)
 
 YELP_API_KEY = os.getenv('YELP_API_KEY', None)
 
