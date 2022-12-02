@@ -5,7 +5,7 @@ from typing import List, Optional, Tuple
 
 import numpy as np
 import streamlit as st
-from humanfriendly import format_timespan
+from humanfriendly import format_number, format_timespan
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_distances, haversine_distances
 from streamlit_js_eval import get_geolocation
@@ -75,7 +75,7 @@ with st.sidebar:
         # round to minutes
         minutes_till_refresh = int(seconds_till_refresh / 60)
     st.markdown(
-        f'{len(establishments)} establishments loaded. \n\n'
+        f'{format_number(len(establishments))} establishments loaded. \n\n'
         f'Next refresh in {format_timespan(num_seconds=60*minutes_till_refresh)}. \n\n'
         'Github: [tianle91/dinesafe](https://github.com/tianle91/dinesafe)'
     )
