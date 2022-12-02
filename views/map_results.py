@@ -7,14 +7,14 @@ import streamlit as st
 from ds_types import Establishment
 
 establishment_icon_data_default = {
-    "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/default.svg",
+    "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/default.svg",
     "width": 100,
     "height": 100,
 }
 
 establishment_icon_data_by_ranking = {
     k: {
-        "url": f"https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/{k+1}.svg",
+        "url": f"https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/{k+1}.svg",
         "width": 100,
         "height": 100,
     }
@@ -22,7 +22,7 @@ establishment_icon_data_by_ranking = {
 }
 
 self_icon_data = {
-    "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/self.svg",
+    "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/self.svg",
     "width": 100,
     "height": 100,
 }
