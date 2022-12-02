@@ -3,6 +3,7 @@ from typing import List
 import streamlit as st
 
 from ds_types import YMD_FORMAT, Establishment, Inspection
+from views.yelp_ratings import get_formatted_yelp_business_rating
 
 summary_md_str = '''
 #### {rank}. **{name}**
@@ -50,5 +51,8 @@ def search_results(most_relevant: List[Establishment]):
                 for deficiency_str in last_inspection_deficiencies:
                     md_str += f'* {deficiency_str}\n'
                 st.markdown(md_str)
+
+        yelp_rating_md_str = get_formatted_yelp_business_rating(establishment=establishment)
+        st.markdown(yelp_rating_md_str, unsafe_allow_html=True)
 
         st.markdown('----')
