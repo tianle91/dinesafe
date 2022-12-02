@@ -13,12 +13,31 @@ establishment_icon_data_default = {
 }
 
 establishment_icon_data_by_ranking = {
-    k: {
-        "url": f"https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/{k+1}.svg",
+    0: {
+        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/1.svg",
         "width": 100,
         "height": 100,
-    }
-    for k in range(5)
+    },
+    1: {
+        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/2.svg",
+        "width": 100,
+        "height": 100,
+    },
+    2: {
+        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/3.svg",
+        "width": 100,
+        "height": 100,
+    },
+    3: {
+        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/4.svg",
+        "width": 100,
+        "height": 100,
+    },
+    4: {
+        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/5.svg",
+        "width": 100,
+        "height": 100,
+    },
 }
 
 self_icon_data = {
