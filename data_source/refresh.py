@@ -12,7 +12,7 @@ LAST_REFRESHED_TS_FNAME = 'LAST_REFRESHED_TS'
 URL = 'https://secure.toronto.ca/opendata/ds/od_xml/v2?format=xml&stream=n'
 
 
-class DinesafeDataSource:
+class DataSourceRefresh:
     def __init__(self, base_path: str = 'data/dinesafe', refresh_seconds: int = 43200) -> None:
         '''
         Refreshes by default every 43200 seconds (12 hours).
@@ -71,4 +71,4 @@ class DinesafeDataSource:
 
 
 if __name__ == '__main__':
-    DinesafeDataSource().get_refreshed_if_stale()
+    DataSourceRefresh().get_refreshed_if_stale()
