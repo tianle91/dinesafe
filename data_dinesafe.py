@@ -1,6 +1,7 @@
 import os
 import time
 from typing import Optional
+
 import wget
 
 LAST_REFRESHED_TS_FNAME = 'LAST_REFRESHED_TS'
