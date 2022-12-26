@@ -2,7 +2,7 @@ from typing import List
 
 import streamlit as st
 
-from ds_types import YMD_FORMAT, Establishment, Inspection
+from data_source.types import YMD_FORMAT, Establishment, Inspection
 from views.yelp_ratings import get_formatted_yelp_business_rating
 
 summary_md_str = '''

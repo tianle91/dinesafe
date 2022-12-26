@@ -1,7 +1,5 @@
-import time
-from dataclasses import dataclass
 from math import radians
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import numpy as np
 import streamlit as st
@@ -10,30 +8,13 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_distances, haversine_distances
 from streamlit_js_eval import get_geolocation
 
-from get_data import (LAST_DOWNLOADED_TIMESTAMP_FILE, REFRESH_SECONDS,
-                      refresh_xml_file, refresh_xml_file_if_stale)
-from get_parsed import get_parsed_establishments
+from data_source import get_parsed_establishments
+from data_source.refresh import DataSourceRefresh
+from distances.geo import Coords, GeoLocation
 from views.map_results import map_results
 from views.search_results import search_results
 
 SHOW_TOP_N_RELEVANT = 25
-
-
-@dataclass
-class Coords:
-    accuracy: float
-    latitude: float
-    longitude: float
-    altitude: Optional[float] = None
-    altitudeAccuracy: Optional[float] = None
-    heading: Optional[float] = None
-    speed: Optional[float] = None
-
-
-@dataclass
-class GeoLocation:
-    coords: Coords
-    timestamp: int
 
 
 def parse_geolocation(d: dict) -> GeoLocation:
@@ -54,26 +35,26 @@ def get_name_distances(
 
 st.title('DinesafeTO')
 
+ds_refresh = DataSourceRefresh()
+ds_path = ds_refresh.get_refreshed_if_stale()
+
 
 @st.experimental_singleton
 def get_parsed_establishments_cached():
-    return get_parsed_establishments()
+    return get_parsed_establishments(p=ds_path)
 
 
 establishments = get_parsed_establishments_cached()
 
-refresh_xml_file_if_stale()
 with st.sidebar:
     st.markdown('Data is taken from [open.toronto.ca](https://open.toronto.ca/dataset/dinesafe/).')
     if st.button('Refresh data'):
         with st.spinner('Refreshing data...'):
-            refresh_xml_file()
+            ds_path = ds_refresh.get_refreshed()
             st.experimental_singleton.clear()
-    with open(LAST_DOWNLOADED_TIMESTAMP_FILE) as f:
-        last_downloaded_ts = float(f.read())
-        seconds_till_refresh = last_downloaded_ts + REFRESH_SECONDS - time.time()
-        # round to minutes
-        minutes_till_refresh = int(seconds_till_refresh / 60)
+
+    seconds_till_refresh = ds_refresh.get_seconds_till_next_refresh()
+    minutes_till_refresh = int(seconds_till_refresh / 60)
     st.markdown(
         f'{format_number(len(establishments))} establishments loaded. \n\n'
         f'Next refresh in {format_timespan(num_seconds=60*minutes_till_refresh)}. \n\n'
