@@ -47,6 +47,13 @@ class DataSourceRefresh:
             time_since_last_refresh = time.time() - last_refreshed_ts
             return time_since_last_refresh
 
+    def get_seconds_till_next_refresh(self) -> Optional[int]:
+        seconds_since_last_refresh = self.get_seconds_since_last_refresh()
+        if seconds_since_last_refresh is None:
+            return None
+        else:
+            return self.refresh_seconds - seconds_since_last_refresh
+
     def is_stale(self) -> bool:
         seconds_since_last_refresh = self.get_seconds_since_last_refresh()
         if seconds_since_last_refresh is None:
@@ -54,16 +61,20 @@ class DataSourceRefresh:
         else:
             return seconds_since_last_refresh > self.refresh_seconds
 
+    def get_refreshed(self) -> str:
+        now_ts = time.time()
+        download_fname = f'{now_ts}.xml'
+        download_path = os.path.join(self.base_path, download_fname)
+        print(f'Downloading to {download_path}')
+        wget.download(URL, out=download_path)
+        with open(self.last_refreshed_ts_path, 'w') as f:
+            f.write(str(now_ts))
+        return download_path
+
     def get_refreshed_if_stale(self) -> str:
         if self.is_stale():
-            now_ts = time.time()
-            download_fname = f'{now_ts}.xml'
-            download_path = os.path.join(self.base_path, download_fname)
-            print(f'Found stale, downloading to {download_path}')
-            wget.download(URL, out=download_path)
-            with open(self.last_refreshed_ts_path, 'w') as f:
-                f.write(str(now_ts))
-            return download_path
+            print('Found stale!')
+            return self.get_refreshed()
         else:
             latest_path = self.get_latest_path()
             print(f'Not stale yet, return latest {latest_path}')
