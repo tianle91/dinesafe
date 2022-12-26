@@ -1,36 +1,20 @@
-from math import radians
+
 from typing import List, Tuple
 
 import numpy as np
 import streamlit as st
 from humanfriendly import format_number, format_timespan
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_distances, haversine_distances
 from streamlit_js_eval import get_geolocation
 
 from data_source import get_parsed_establishments
 from data_source.refresh import DataSourceRefresh
-from distances.geo import Coords, GeoLocation
+from distances.geo import get_haversine_distances, parse_geolocation
+from distances.name import get_name_distances
 from views.map_results import map_results
 from views.search_results import search_results
 
 SHOW_TOP_N_RELEVANT = 25
-
-
-def parse_geolocation(d: dict) -> GeoLocation:
-    return GeoLocation(
-        coords=Coords(**d.get('coords', {})),
-        timestamp=d.get('timestamp'),
-    )
-
-
-def get_name_distances(
-    search_term: str,
-    tfidf: TfidfVectorizer,
-    source_vecs: np.ndarray,
-) -> List[float]:
-    search_term_vecs = tfidf.transform([search_term])
-    return list(cosine_distances(source_vecs, search_term_vecs).reshape(-1))
 
 
 st.title('DinesafeTO')
@@ -100,18 +84,6 @@ if len(search_term) > 0:
     name_distances_mid = .5 * (name_distances_min + name_distances_max)
     name_distances_range = name_distances_max - name_distances_min
     name_distances = (name_distances - name_distances_mid) / (name_distances_range / 2) + 2
-
-
-def get_haversine_distances(
-    center_loc: Tuple[float, float],
-    locs: List[Tuple[float, float]]
-) -> List[float]:
-    center_loc = [[radians(v) for v in center_loc]]
-    locs = [
-        [radians(v) for v in loc]
-        for loc in locs
-    ]
-    return list(haversine_distances(X=locs, Y=center_loc)[:, 0])
 
 
 geolocation = None
