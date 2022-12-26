@@ -9,6 +9,7 @@ from streamlit_js_eval import get_geolocation
 
 from data_source import get_parsed_establishments
 from data_source.refresh import DataSourceRefresh
+from distances import normalize
 from distances.geo import get_haversine_distances, parse_geolocation
 from distances.name import get_name_distances
 from views.map_results import map_results
@@ -78,12 +79,7 @@ if len(search_term) > 0:
         tfidf=tfidf,
         source_vecs=establishment_vecs
     )
-    # normalize to range: 1, 2
-    name_distances_min = min(name_distances)
-    name_distances_max = max(name_distances)
-    name_distances_mid = .5 * (name_distances_min + name_distances_max)
-    name_distances_range = name_distances_max - name_distances_min
-    name_distances = (name_distances - name_distances_mid) / (name_distances_range / 2) + 2
+    name_distances = normalize(arr=name_distances, lowest_val=1., hightest_val=2.)
 
 
 geolocation = None
@@ -101,8 +97,7 @@ if geolocation is not None:
         center_loc=[geolocation.coords.latitude, geolocation.coords.longitude],
         locs=establishment_locs,
     )
-    # normalize to range: 0, 1
-    establishment_distances = establishment_distances / max(establishment_distances)
+    establishment_distances = normalize(arr=establishment_distances)
 
 
 # find most relevant establishments
