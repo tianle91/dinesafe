@@ -4,7 +4,7 @@ import pandas as pd
 import pydeck
 import streamlit as st
 
-from ds_types import Establishment
+from data_source.types import Establishment
 
 establishment_icon_data_default = {
     "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/default.svg",

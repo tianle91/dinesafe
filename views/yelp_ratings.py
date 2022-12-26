@@ -4,7 +4,7 @@ from typing import Optional
 import requests
 import requests_cache
 
-from ds_types import Establishment
+from data_source.types import Establishment
 
 requests_cache.install_cache(
     backend='sqlite',
