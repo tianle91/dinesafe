@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "dinesafe"
+version = "0"
+description = ""
+authors = ["Tianle Chen <tianlechen@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+humanfriendly = "*"
+pandas = "*"
+requests = "*"
+requests-cache = "*"
+scikit-learn = "*"
+streamlit = "*"
+streamlit-js-eval = "*"
+xmltodict = "*"
+wget = "*"
+
+[tool.poetry.group.dev.dependencies]
+isort = "*"
+pylint = "*"
+autopep8 = "*"
+pytest = "*"
+flake8 = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
