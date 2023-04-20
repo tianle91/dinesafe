@@ -10,3 +10,7 @@ clean:
 
 .git/hooks/pre-commit: .venv
 	.venv/bin/python -m pre_commit install
+
+.PHONY: test
+test:
+	tox run

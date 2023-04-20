@@ -2,7 +2,7 @@ import glob
 import logging
 import os
 import time
-from typing import List
+from typing import List, Optional
 
 import wget
 
@@ -30,12 +30,16 @@ class DataSource:
 
     @property
     def timestamps(self) -> List[float]:
-        return [float(os.path.splitext(p)[0]) for p in self.paths]
+        return [float(os.path.splitext(os.path.basename(p))[0]) for p in self.paths]
 
-    def refresh_and_get_latest_path(self) -> str:
+    def refresh_and_get_latest_path(self) -> Optional[str]:
         now_ts = time.time()
         download_fname = f'{now_ts}.xml'
         download_path = os.path.join(self.base_path, download_fname)
         logger.info(f'Downloading to {download_path}')
-        wget.download(URL, out=download_path)
-        return download_path
+        try:
+            wget.download(URL, out=download_path)
+            return download_path
+        except Exception as e:
+            logger.error(str(e))
+        return None
