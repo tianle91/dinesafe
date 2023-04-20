@@ -1,4 +1,4 @@
-.DEFAULT_GOAL := .git/hooks/pre-commit
+.DEFAULT_GOAL := test
 
 .PHONY: clean
 clean:
@@ -12,5 +12,6 @@ clean:
 	.venv/bin/python -m pre_commit install
 
 .PHONY: test
-test:
+test: .git/hooks/pre-commit
+	rm -rf data
 	tox run
