@@ -15,6 +15,21 @@ from dinesafe.distances.name import get_name_distances
 from views.map_results import map_results
 from views.search_results import search_results
 
+
+GOOGLE_ANALYTICS_TAG = """
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1XV37TNLTG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-1XV37TNLTG');
+</script>
+"""
+st.markdown(body=GOOGLE_ANALYTICS_TAG, unsafe_allow_html=True)
+
+
 SHOW_TOP_N_RELEVANT = 25
 REFRESH_SECONDS = 43200  # 12 hours
 
