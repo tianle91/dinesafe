@@ -18,11 +18,12 @@ xmltodict = "*"
 wget = "*"
 
 [tool.poetry.group.dev.dependencies]
-isort = "*"
+isort = "5.12.0" # should match .pre-commit-config.yaml
 pylint = "*"
 autopep8 = "*"
 pytest = "*"
-flake8 = "*"
+flake8 = "6.0.0" # should match .pre-commit-config.yaml
+pre-commit = "^3.2.2"
 
 [build-system]
 requires = ["poetry-core"]
