@@ -2,8 +2,12 @@ import xmltodict
 
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import List, Optional
+from typing import List, Optional, Dict
 from dinesafe.constants import YMD_FORMAT
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -32,7 +36,7 @@ class Establishment:
     latitude: float
     longitude: float
     status: str
-    inspection: List[Inspection]
+    inspections: Dict[date, List[Inspection]]
     yelp_biz_result: Optional[dict] = None
 
 
@@ -80,6 +84,13 @@ def get_establishment(d: dict) -> Establishment:
     else:
         inspection_l = inspection_d_or_l
 
+    inspections = {}
+    for inspection_d in inspection_l:
+        inspection = get_inspection(inspection_d)
+        inspections[inspection.date] = inspections.get(inspection.date, []) + [
+            inspection
+        ]
+
     return Establishment(
         id=get_parsed_value(d, "ID"),
         name=get_parsed_value(d, "NAME"),
@@ -88,20 +99,25 @@ def get_establishment(d: dict) -> Establishment:
         latitude=get_parsed_value(d, "LATITUDE"),
         longitude=get_parsed_value(d, "LONGITUDE"),
         status=get_parsed_value(d, "STATUS"),
-        inspection=[get_inspection(d) for d in inspection_l],
+        inspections=inspections,
     )
 
 
-def get_parsed_establishments(p: str) -> List[Establishment]:
+def get_parsed_establishments(p: str) -> Dict[str, Establishment]:
     establishment_l = []
     with open(p) as f:
         establishment_l = xmltodict.parse(f.read())["DINESAFE_DATA"]["ESTABLISHMENT"]
-    establishments = []
+    establishments = {}
     for d in establishment_l:
         try:
-            establishments.append(get_establishment(d))
+            establishment = get_establishment(d)
         except Exception as e:
-            print(e)
-            print(d)
-            break
+            logger.error(f"Failed to parse establishment: {d}")
+            raise (e)
+
+        if establishment.id in establishments:
+            raise KeyError(
+                f"Establishment {establishment.id} already in establishments: {establishments}"
+            )
+        establishments[establishment.id] = establishment
     return establishments

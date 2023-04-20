@@ -19,8 +19,11 @@ summary_md_str = """
 
 def search_results(most_relevant: List[Establishment]):
     for i, establishment in enumerate(most_relevant):
+        inspections = []
+        for dt in establishment.inspections:
+            inspections += establishment.inspections[dt]
         latest_inspections: List[Inspection] = sorted(
-            establishment.inspection, key=lambda insp: insp.date, reverse=True
+            inspections, key=lambda insp: insp.date, reverse=True
         )
         last_inspection = latest_inspections[0] if len(latest_inspections) > 0 else None
 
