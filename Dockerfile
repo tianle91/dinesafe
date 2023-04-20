@@ -5,4 +5,4 @@ FROM python:${PYTHON_VERSION}-${IMAGE_VARIANT}
 
 RUN apt update -y && apt install git
 
-RUN pip install poetry tox
+RUN pip install poetry tox tox-poetry-installer
