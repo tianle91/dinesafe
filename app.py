@@ -35,21 +35,24 @@ REFRESH_SECONDS = 43200  # 12 hours
 
 st.title("DinesafeTO")
 
-ds = DataSource()
-time_since_latest = ds.time_since_latest_timestamp
+DATA_SOURCE = DataSource()
+
+# auto refresh upon loading
+time_since_latest = DATA_SOURCE.time_since_latest_timestamp
 if time_since_latest is None or time_since_latest > REFRESH_SECONDS:
-    ds.refresh_and_get_latest_path()
-ds_path = ds.latest_path
-if ds_path is None:
+    DATA_SOURCE.refresh_and_get_latest_path()
+
+DATA_SOURCE_PATH = DATA_SOURCE.latest_path
+if DATA_SOURCE_PATH is None:
     raise ValueError("ds_path is None")
 
 
 @st.experimental_singleton()
 def get_parsed_establishments_cached():
-    return get_parsed_establishments(p=ds_path)
+    return get_parsed_establishments(p=DATA_SOURCE_PATH)
 
 
-establishments = get_parsed_establishments_cached()
+ESTABLISHMENTS = get_parsed_establishments_cached()
 
 with st.sidebar:
     st.markdown(
@@ -57,18 +60,18 @@ with st.sidebar:
     )
     if st.button("Refresh data"):
         with st.spinner("Refreshing data..."):
-            ds_path = ds.refresh_and_get_latest_path()
+            DATA_SOURCE_PATH = DATA_SOURCE.refresh_and_get_latest_path()
             st.experimental_singleton.clear()
 
-    num_minutes = (REFRESH_SECONDS - ds.time_since_latest_timestamp) // 60
+    num_minutes = (REFRESH_SECONDS - DATA_SOURCE.time_since_latest_timestamp) // 60
     st.markdown(
-        f"{format_number(len(establishments))} establishments loaded. \n\n"
+        f"{format_number(len(ESTABLISHMENTS))} establishments loaded. \n\n"
         f"Next refresh in {format_timespan(num_seconds=60*num_minutes)}. \n\n"
         "Github: [tianle91/dinesafe](https://github.com/tianle91/dinesafe)"
     )
 
 
-if len(establishments) == 0:
+if len(ESTABLISHMENTS) == 0:
     st.warning("No establishments loaded. Please refresh data")
     st.stop()
 
@@ -80,8 +83,8 @@ def get_tfidfs(establishment_names: List[str]) -> Tuple[TfidfVectorizer, np.ndar
     return tfidf, establishment_vecs
 
 
-with st.spinner(f"Indexing {len(establishments)} establishments..."):
-    establishment_names = [est.name for est in establishments]
+with st.spinner(f"Indexing {len(ESTABLISHMENTS)} establishments..."):
+    establishment_names = [est.name for est in ESTABLISHMENTS.values()]
     tfidf, establishment_vecs = get_tfidfs(establishment_names=establishment_names)
 
 search_term = st.text_input(
@@ -91,8 +94,8 @@ search_term = st.text_input(
 )
 
 
-name_distances = [1.0 for _ in establishments]
-establishment_distances = [1.0 for _ in establishments]
+name_distances = [1.0 for _ in ESTABLISHMENTS]
+establishment_distances = [1.0 for _ in ESTABLISHMENTS]
 
 if len(search_term) > 0:
     name_distances = get_name_distances(
@@ -110,7 +113,7 @@ if st.checkbox("Near me"):
 if geolocation is not None:
     establishment_locs = [
         [establishment.latitude, establishment.longitude]
-        for establishment in establishments
+        for establishment in ESTABLISHMENTS.values()
     ]
     establishment_distances = get_haversine_distances(
         center_loc=[geolocation.coords.latitude, geolocation.coords.longitude],
@@ -122,7 +125,7 @@ if geolocation is not None:
 # find most relevant establishments
 most_relevant_establishments = []
 for est, d_name, d_estab in zip(
-    establishments, name_distances, establishment_distances
+    ESTABLISHMENTS.values(), name_distances, establishment_distances
 ):
     if d_name < 1.2:
         most_relevant_establishments.append((est, d_estab))

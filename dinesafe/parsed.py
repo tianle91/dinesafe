@@ -1,39 +1,12 @@
 import xmltodict
 
-from dataclasses import dataclass
 from datetime import date, datetime
-from typing import List, Optional
+from typing import List, Dict
 from dinesafe.constants import YMD_FORMAT
+from dinesafe.types import Infraction, Establishment, Inspection
+import logging
 
-
-@dataclass
-class Infraction:
-    severity: str
-    deficiency: str
-    action: str
-    conviction_date: Optional[date] = None
-    court_outcome: Optional[str] = None
-    amount_fined: Optional[float] = None
-
-
-@dataclass
-class Inspection:
-    status: str
-    date: date
-    infraction: List[Infraction]
-
-
-@dataclass
-class Establishment:
-    id: str
-    name: str
-    type: str
-    address: str
-    latitude: float
-    longitude: float
-    status: str
-    inspection: List[Inspection]
-    yelp_biz_result: Optional[dict] = None
+logger = logging.getLogger(__name__)
 
 
 def get_parsed_value(d, k):
@@ -68,7 +41,7 @@ def get_inspection(d: dict) -> Inspection:
     return Inspection(
         status=get_parsed_value(d, "STATUS"),
         date=get_parsed_value(d, "DATE"),
-        infraction=[get_infraction(d) for d in infraction_l],
+        infractions=[get_infraction(d) for d in infraction_l],
     )
 
 
@@ -80,6 +53,13 @@ def get_establishment(d: dict) -> Establishment:
     else:
         inspection_l = inspection_d_or_l
 
+    inspections = {}
+    for inspection_d in inspection_l:
+        inspection = get_inspection(inspection_d)
+        inspections[inspection.date] = inspections.get(inspection.date, []) + [
+            inspection
+        ]
+
     return Establishment(
         id=get_parsed_value(d, "ID"),
         name=get_parsed_value(d, "NAME"),
@@ -88,20 +68,57 @@ def get_establishment(d: dict) -> Establishment:
         latitude=get_parsed_value(d, "LATITUDE"),
         longitude=get_parsed_value(d, "LONGITUDE"),
         status=get_parsed_value(d, "STATUS"),
-        inspection=[get_inspection(d) for d in inspection_l],
+        inspections=inspections,
     )
 
 
-def get_parsed_establishments(p: str) -> List[Establishment]:
+def get_parsed_establishments(p: str) -> Dict[str, Establishment]:
     establishment_l = []
     with open(p) as f:
         establishment_l = xmltodict.parse(f.read())["DINESAFE_DATA"]["ESTABLISHMENT"]
-    establishments = []
+    establishments = {}
     for d in establishment_l:
         try:
-            establishments.append(get_establishment(d))
+            establishment = get_establishment(d)
         except Exception as e:
-            print(e)
-            print(d)
-            break
+            logger.error(f"Failed to parse establishment: {d}")
+            raise (e)
+
+        if establishment.id in establishments:
+            raise KeyError(
+                f"Establishment {establishment.id} already in establishments: {establishments}"
+            )
+        establishments[establishment.id] = establishment
     return establishments
+
+
+def get_new_establishments(
+    new: Dict[str, Establishment],
+    old: Dict[str, Establishment],
+) -> Dict[str, Establishment]:
+    return {k: new[k] for k in set(new.keys()) - set(old.keys())}
+
+
+def get_new_inspections(
+    new: Dict[str, Establishment],
+    old: Dict[str, Establishment],
+) -> Dict[str, Dict[date, List[Inspection]]]:
+    out = {}
+    for k in old:
+        old_estab = old[k]
+        if k not in new:
+            logger.warning(f"Establishment: {k} not found in new!")
+        else:
+            new_estab = new[k]
+            new_inspections = {}
+            for dt in new_estab.inspections:
+                new_inspections_dt = [
+                    inspection
+                    for inspection in new_estab.inspections[dt]
+                    if inspection not in old_estab.inspections.get(dt, [])
+                ]
+                if len(new_inspections_dt) > 0:
+                    new_inspections[dt] = new_inspections_dt
+            if len(new_inspections) > 0:
+                out[k] = new_inspections
+    return out

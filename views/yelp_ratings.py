@@ -1,6 +1,4 @@
-from typing import Optional
-
-from dinesafe.parsed import Establishment
+from dinesafe.types import Establishment
 from dinesafe.yelp import get_yelp_biz_search_result
 
 rating_to_stars_url_mapping = {
