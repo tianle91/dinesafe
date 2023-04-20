@@ -33,6 +33,7 @@ class Establishment:
     longitude: float
     status: str
     inspection: List[Inspection]
+    yelp_biz_result: Optional[dict] = None
 
 
 def get_parsed_value(d, k):

@@ -1,8 +1,7 @@
 from dinesafe.data import DataSource
 
 
-def test_data_source():
-    ds = DataSource()
-    assert ds.refresh_and_get_latest_path() is not None
-    assert ds.latest_path is not None
-    assert len(ds.timestamps) == 1
+def test_data_source(data_source: DataSource):
+    assert len(data_source.paths) == 1
+    assert len(data_source.timestamps) == 1
+    assert data_source.latest_path is not None
