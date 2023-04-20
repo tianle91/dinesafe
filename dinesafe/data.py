@@ -15,6 +15,10 @@ LAST_REFRESHED_TS_FNAME = "LAST_REFRESHED_TS"
 URL = "https://secure.toronto.ca/opendata/ds/od_xml/v2?format=xml&stream=n"
 
 
+def get_timestamp_from_path(p: str) -> float:
+    return float(os.path.splitext(os.path.basename(p))[0])
+
+
 class DataSource:
     def __init__(self, base_path: str = "data/dinesafe") -> None:
         os.makedirs(base_path, exist_ok=True)
@@ -22,14 +26,15 @@ class DataSource:
 
     @property
     def paths(self) -> List[str]:
-        return list(glob.glob(os.path.join(self.base_path, "*.xml")))
+        return sorted(
+            list(glob.glob(os.path.join(self.base_path, "*.xml"))),
+            key=lambda p: get_timestamp_from_path(p),
+            reverse=True,
+        )
 
     @property
     def timestamps(self) -> List[float]:
-        return sorted(
-            [float(os.path.splitext(os.path.basename(p))[0]) for p in self.paths],
-            reverse=True,
-        )
+        return [get_timestamp_from_path(p) for p in self.paths]
 
     @property
     def latest_timestamp(self) -> Optional[float]:
@@ -46,11 +51,7 @@ class DataSource:
 
     @property
     def latest_path(self) -> Optional[str]:
-        return (
-            os.path.join(self.base_path, f"{self.latest_timestamp}.xml")
-            if self.latest_timestamp is not None
-            else None
-        )
+        return self.paths[0]
 
     def refresh_and_get_latest_path(self) -> Optional[str]:
         now_ts = time.time()
