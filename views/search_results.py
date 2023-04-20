@@ -19,20 +19,25 @@ summary_md_str = """
 
 def search_results(most_relevant: List[Establishment]):
     for i, establishment in enumerate(most_relevant):
+        # get all inspections regardless of date
         inspections = []
         for dt in establishment.inspections:
             inspections += establishment.inspections[dt]
+
+        # find latest inspection
         latest_inspections: List[Inspection] = sorted(
             inspections, key=lambda insp: insp.date, reverse=True
         )
-        last_inspection = latest_inspections[0] if len(latest_inspections) > 0 else None
+        latest_inspection = (
+            latest_inspections[0] if len(latest_inspections) > 0 else None
+        )
 
         last_inspection_dt_str = "NA"
         last_inspection_deficiencies = []
-        if last_inspection is not None:
-            last_inspection_dt_str = last_inspection.date.strftime(YMD_FORMAT)
+        if latest_inspection is not None:
+            last_inspection_dt_str = latest_inspection.date.strftime(YMD_FORMAT)
             last_inspection_deficiencies = [
-                infraction.deficiency for infraction in last_inspection.infraction
+                infraction.deficiency for infraction in latest_inspection.infractions
             ]
 
         status_color = "Green" if establishment.status.lower() == "pass" else "Red"

@@ -10,6 +10,16 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+INFRACTION_STR = """
+severity: {severity}
+deficiency: {deficiency}
+action: {action}
+conviction_date: {conviction_date}
+court_outcome: {court_outcome}
+amount_fined: {amount_fined}
+"""
+
+
 @dataclass
 class Infraction:
     severity: str
@@ -19,12 +29,45 @@ class Infraction:
     court_outcome: Optional[str] = None
     amount_fined: Optional[float] = None
 
+    def __str__(self) -> str:
+        return INFRACTION_STR.format(
+            severity=self.severity,
+            deficiency=self.deficiency,
+            action=self.action,
+            conviction_date=self.conviction_date,
+            court_outcome=self.court_outcome,
+            amount_fined=self.amount_fined,
+        )
+
+    def __hash__(self) -> int:
+        return hash(str(self))
+
+
+INSPECTION_STR = """
+status: {status}
+date: {date}
+infractions:
+{infractions}
+"""
+
 
 @dataclass
 class Inspection:
     status: str
     date: date
-    infraction: List[Infraction]
+    infractions: List[Infraction]
+
+    def __str__(self) -> str:
+        return INSPECTION_STR.format(
+            status=self.status,
+            date=self.date,
+            infractions="----\n".join(
+                [str(infraction) for infraction in self.infractions]
+            ),
+        )
+
+    def __hash__(self) -> int:
+        return hash(str(self))
 
 
 @dataclass
@@ -72,7 +115,7 @@ def get_inspection(d: dict) -> Inspection:
     return Inspection(
         status=get_parsed_value(d, "STATUS"),
         date=get_parsed_value(d, "DATE"),
-        infraction=[get_infraction(d) for d in infraction_l],
+        infractions=[get_infraction(d) for d in infraction_l],
     )
 
 
@@ -121,3 +164,35 @@ def get_parsed_establishments(p: str) -> Dict[str, Establishment]:
             )
         establishments[establishment.id] = establishment
     return establishments
+
+
+def get_new_establishments(
+    new: Dict[str, Establishment],
+    old: Dict[str, Establishment],
+) -> Dict[str, Establishment]:
+    return {k: new[k] for k in set(new.keys()) - set(old.keys())}
+
+
+def get_new_inspections(
+    new: Dict[str, Establishment],
+    old: Dict[str, Establishment],
+) -> Dict[str, Dict[date, List[Inspection]]]:
+    out = {}
+    for k in old:
+        old_estab = old[k]
+        if k not in new:
+            logger.warning(f"Establishment: {k} not found in new!")
+        else:
+            new_estab = new[k]
+            new_inspections = {}
+            for dt in new_estab.inspections:
+                new_inspections_dt = [
+                    inspection
+                    for inspection in new_estab.inspections[dt]
+                    if inspection not in old_estab.inspections.get(dt, [])
+                ]
+                if len(new_inspections_dt) > 0:
+                    new_inspections[dt] = new_inspections_dt
+            if len(new_inspections) > 0:
+                out[k] = new_inspections
+    return out
