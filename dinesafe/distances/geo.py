@@ -24,18 +24,14 @@ class GeoLocation:
 
 def parse_geolocation(d: dict) -> GeoLocation:
     return GeoLocation(
-        coords=Coords(**d.get('coords', {})),
-        timestamp=d.get('timestamp'),
+        coords=Coords(**d.get("coords", {})),
+        timestamp=d.get("timestamp"),
     )
 
 
 def get_haversine_distances(
-    center_loc: Tuple[float, float],
-    locs: List[Tuple[float, float]]
+    center_loc: Tuple[float, float], locs: List[Tuple[float, float]]
 ) -> List[float]:
     center_loc = [[radians(v) for v in center_loc]]
-    locs = [
-        [radians(v) for v in loc]
-        for loc in locs
-    ]
+    locs = [[radians(v) for v in loc] for loc in locs]
     return list(haversine_distances(X=locs, Y=center_loc)[:, 0])
