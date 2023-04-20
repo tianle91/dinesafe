@@ -14,4 +14,6 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install poetry tox tox-poetry-installer
       - name: tox
+        env:
+          YELP_API_KEY: ${{ secrets.YELP_API_KEY }}
         run: tox run
