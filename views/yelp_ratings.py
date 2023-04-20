@@ -1,19 +1,7 @@
-import os
 from typing import Optional
 
-import requests
-import requests_cache
-
 from dinesafe.parsed import Establishment
-
-requests_cache.install_cache(
-    backend="sqlite",
-    # 1 day
-    urls_expire_after={"*": 86400},
-)
-
-YELP_API_KEY = os.getenv("YELP_API_KEY", None)
-
+from dinesafe.yelp import get_yelp_biz_search_result
 
 rating_to_stars_url_mapping = {
     0.0: "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/yelp_stars/regular_0.png",
@@ -34,27 +22,6 @@ yelp_business_md_template = """
 
 Based on {num_reviews} reviews.
 """
-
-
-def get_yelp_biz_search_result(establishment: Establishment) -> Optional[dict]:
-    if YELP_API_KEY is not None:
-        response = requests.get(
-            url="https://api.yelp.com/v3/businesses/search",
-            headers={
-                "accept": "application/json",
-                "Authorization": f"Bearer {YELP_API_KEY}",
-            },
-            params={
-                "latitude": establishment.latitude,
-                "longitude": establishment.longitude,
-                "term": establishment.name,
-            },
-        )
-        if response.status_code == 200:
-            businesses = response.json()["businesses"]
-            if len(businesses) > 0:
-                return businesses[0]
-    return None
 
 
 def get_formatted_yelp_business_rating(establishment: Establishment) -> str:
