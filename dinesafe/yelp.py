@@ -4,7 +4,7 @@ from typing import Optional
 import requests
 import requests_cache
 
-from dinesafe.parsed import Establishment
+from dinesafe.types import Establishment
 import logging
 
 logger = logging.getLogger(__name__)

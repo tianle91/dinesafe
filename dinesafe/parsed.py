@@ -1,86 +1,12 @@
 import xmltodict
 
-from dataclasses import dataclass
 from datetime import date, datetime
-from typing import List, Optional, Dict
+from typing import List, Dict
 from dinesafe.constants import YMD_FORMAT
-
+from dinesafe.types import Infraction, Establishment, Inspection
 import logging
 
 logger = logging.getLogger(__name__)
-
-
-INFRACTION_STR = """
-severity: {severity}
-deficiency: {deficiency}
-action: {action}
-conviction_date: {conviction_date}
-court_outcome: {court_outcome}
-amount_fined: {amount_fined}
-"""
-
-
-@dataclass
-class Infraction:
-    severity: str
-    deficiency: str
-    action: str
-    conviction_date: Optional[date] = None
-    court_outcome: Optional[str] = None
-    amount_fined: Optional[float] = None
-
-    def __str__(self) -> str:
-        return INFRACTION_STR.format(
-            severity=self.severity,
-            deficiency=self.deficiency,
-            action=self.action,
-            conviction_date=self.conviction_date,
-            court_outcome=self.court_outcome,
-            amount_fined=self.amount_fined,
-        )
-
-    def __hash__(self) -> int:
-        return hash(str(self))
-
-
-INSPECTION_STR = """
-status: {status}
-date: {date}
-infractions:
-{infractions}
-"""
-
-
-@dataclass
-class Inspection:
-    status: str
-    date: date
-    infractions: List[Infraction]
-
-    def __str__(self) -> str:
-        return INSPECTION_STR.format(
-            status=self.status,
-            date=self.date,
-            infractions="----\n".join(
-                [str(infraction) for infraction in self.infractions]
-            ),
-        )
-
-    def __hash__(self) -> int:
-        return hash(str(self))
-
-
-@dataclass
-class Establishment:
-    id: str
-    name: str
-    type: str
-    address: str
-    latitude: float
-    longitude: float
-    status: str
-    inspections: Dict[date, List[Inspection]]
-    yelp_biz_result: Optional[dict] = None
 
 
 def get_parsed_value(d, k):

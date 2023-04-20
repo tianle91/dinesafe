@@ -3,7 +3,8 @@ from typing import List
 import streamlit as st
 
 from dinesafe.constants import YMD_FORMAT
-from dinesafe.parsed import Establishment, Inspection
+from dinesafe.types import Establishment, Inspection
+
 from views.yelp_ratings import get_formatted_yelp_business_rating
 
 summary_md_str = """
