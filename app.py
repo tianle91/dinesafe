@@ -45,7 +45,7 @@ with st.sidebar:
             ds_path = ds.refresh_and_get_latest_path()
             st.experimental_singleton.clear()
 
-    num_minutes = ds.time_since_latest_timestamp // 60
+    num_minutes = (REFRESH_SECONDS - ds.time_since_latest_timestamp) // 60
     st.markdown(
         f"{format_number(len(establishments))} establishments loaded. \n\n"
         f"Next refresh in {format_timespan(num_seconds=60*num_minutes)}. \n\n"
