@@ -12,7 +12,9 @@
 		"vscode": {
 			"extensions": [
 				"ms-python.python",
-				"bungcip.better-toml"
+				"bungcip.better-toml",
+				"ms-vscode.makefile-tools",
+				"ms-azuretools.vscode-docker"
 			]
 		}
 	}
