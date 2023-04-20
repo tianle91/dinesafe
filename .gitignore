@@ -136,4 +136,4 @@ data/
 *.sqlite
 
 # secrets
-.streamlit/config.toml
+.streamlit/secrets.toml
