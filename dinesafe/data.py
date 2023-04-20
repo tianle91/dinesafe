@@ -16,15 +16,9 @@ URL = "https://secure.toronto.ca/opendata/ds/od_xml/v2?format=xml&stream=n"
 
 
 class DataSource:
-    def __init__(
-        self, base_path: str = "data/dinesafe", refresh_seconds: int = 43200
-    ) -> None:
-        """
-        Refreshes by default every 43200 seconds (12 hours).
-        """
+    def __init__(self, base_path: str = "data/dinesafe") -> None:
         os.makedirs(base_path, exist_ok=True)
         self.base_path = base_path
-        self.refresh_seconds = refresh_seconds
 
     @property
     def paths(self) -> List[str]:
@@ -38,10 +32,25 @@ class DataSource:
         )
 
     @property
+    def latest_timestamp(self) -> Optional[float]:
+        return self.timestamps[0] if len(self.timestamps) > 0 else None
+
+    @property
+    def time_since_latest_timestamp(self) -> Optional[float]:
+        now_ts = time.time()
+        return (
+            now_ts - self.latest_timestamp
+            if self.latest_timestamp is not None
+            else None
+        )
+
+    @property
     def latest_path(self) -> Optional[str]:
-        if len(self.timestamps) > 0:
-            return os.path.join(self.base_path, f"{self.timestamps[0]}.xml")
-        return None
+        return (
+            os.path.join(self.base_path, f"{self.latest_timestamp}.xml")
+            if self.latest_timestamp is not None
+            else None
+        )
 
     def refresh_and_get_latest_path(self) -> Optional[str]:
         now_ts = time.time()

@@ -4,7 +4,7 @@ import pandas as pd
 import pydeck
 import streamlit as st
 
-from data_source.types import Establishment
+from dinesafe.parsed import Establishment
 
 establishment_icon_data_default = {
     "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/default.svg",
@@ -48,21 +48,24 @@ self_icon_data = {
 
 
 def map_results(
-    most_relevant: List[Establishment],
-    center_loc: Optional[Tuple[float, float]] = None
+    most_relevant: List[Establishment], center_loc: Optional[Tuple[float, float]] = None
 ):
-    establishment_df = pd.DataFrame(data=[
-        {
-            'lon': est.longitude,
-            'lat': est.latitude,
-            'name': est.name,
-            'status': est.status,
-            'icon_data': establishment_icon_data_by_ranking.get(i, establishment_icon_data_default),
-        }
-        for i, est in enumerate(most_relevant)
-    ])
+    establishment_df = pd.DataFrame(
+        data=[
+            {
+                "lon": est.longitude,
+                "lat": est.latitude,
+                "name": est.name,
+                "status": est.status,
+                "icon_data": establishment_icon_data_by_ranking.get(
+                    i, establishment_icon_data_default
+                ),
+            }
+            for i, est in enumerate(most_relevant)
+        ]
+    )
     establishment_layer = pydeck.Layer(
-        'IconLayer',
+        "IconLayer",
         data=establishment_df,
         get_icon="icon_data",
         size_scale=30,
@@ -72,15 +75,19 @@ def map_results(
 
     if center_loc is not None:
         lat, lon = center_loc
-        self_df = pd.DataFrame([{
-            'lon': lon,
-            'lat': lat,
-            'name': 'Your Location',
-            'status': '',
-            'icon_data': self_icon_data
-        }])
+        self_df = pd.DataFrame(
+            [
+                {
+                    "lon": lon,
+                    "lat": lat,
+                    "name": "Your Location",
+                    "status": "",
+                    "icon_data": self_icon_data,
+                }
+            ]
+        )
         self_layer = pydeck.Layer(
-            'IconLayer',
+            "IconLayer",
             data=self_df,
             get_icon="icon_data",
             size_scale=30,
@@ -95,13 +102,8 @@ def map_results(
 
     r = pydeck.Deck(
         layers=layers,
-        map_style='road',
+        map_style="road",
         initial_view_state=pydeck.data_utils.compute_view(points=points),
-        tooltip={
-            'html': '{name} ({status})',
-            'style': {
-                'color': 'white'
-            }
-        },
+        tooltip={"html": "{name} ({status})", "style": {"color": "white"}},
     )
     st.pydeck_chart(r)
