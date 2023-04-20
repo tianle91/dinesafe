@@ -43,5 +43,7 @@ def get_yelp_biz_search_result(establishment: Establishment) -> Optional[dict]:
                 establishment.yelp_biz_result = top_business_result
                 return top_business_result
             else:
-                logger.error(f"Received no business results")
+                logger.error(
+                    f"Received no business results for establishment: {establishment}"
+                )
     return None
