@@ -3,7 +3,7 @@ from datetime import date
 from typing import Optional
 
 
-@dataclass(kw_only=True)
+@dataclass
 class Inspection:
     inspection_id: str
     establishment_id: str
@@ -12,7 +12,7 @@ class Inspection:
     details_json: Optional[str] = None
 
 
-@dataclass(kw_only=True)
+@dataclass
 class Establishment:
     establishment_id: str
     name: str
