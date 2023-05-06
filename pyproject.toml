@@ -6,7 +6,7 @@ authors = ["Tianle Chen <tianlechen@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">3.10,<4.0" # should match Dockerfile
+python = ">3.9.7,<4.0" # should match Dockerfile
 humanfriendly = "*"
 pandas = "*"
 requests = "*"
