@@ -132,6 +132,7 @@ dmypy.json
 .DS_Store
 
 # data
+data/dinesafe/*.xml
 *.sqlite
 
 # secrets
