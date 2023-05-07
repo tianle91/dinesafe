@@ -39,7 +39,7 @@ def create_inspection_table_if_not_exists(conn: Connection):
     )
 
 
-def get_all_establishments(conn: Connection) -> Dict[str, Establishment]:
+def get_all_establishments(conn: Connection) -> List[Establishment]:
     result = conn.execute(text("SELECT * FROM establishment"))
     return [_parse_establishment_row(row=row) for row in result]
 

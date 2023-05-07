@@ -132,6 +132,7 @@ dmypy.json
 .DS_Store
 
 # data
+LAST_REFRESHED_TS
 data/dinesafe/*.xml
 *.sqlite
 

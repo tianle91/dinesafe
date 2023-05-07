@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 import numpy as np
 import streamlit as st
@@ -22,11 +22,14 @@ from dinesafe.data.dinesafeto.parsed import (
 import time
 from dinesafe.data.db.engine import get_local_engine
 from dinesafe.data.db.io import (
-    add_new_establishment_if_not_exists,
-    add_new_inspection_if_not_exists,
-    get_establishments,
-    get_inspections,
+    create_establishment_table_if_not_exists,
+    create_inspection_table_if_not_exists,
+    add_new_establishment,
+    add_new_inspections,
+    get_all_establishments,
+    get_all_latest_inspections,
 )
+from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
 from dinesafe.data.db.types import Establishment, Inspection
 from sqlalchemy import text
 import logging
@@ -53,6 +56,10 @@ REFRESH_SECONDS = 43200  # 12 hours
 LAST_REFRESHED_TS_P = "LAST_REFRESHED_TS"
 DB_ENGINE = get_local_engine()
 
+with DB_ENGINE.connect() as conn:
+    create_establishment_table_if_not_exists(conn=conn)
+    create_inspection_table_if_not_exists(conn=conn)
+
 st.title("DinesafeTO")
 
 
@@ -71,71 +78,70 @@ else:
     logger.info(f"Will refresh because {LAST_REFRESHED_TS_P} is not found.")
 
 
-def refresh_dinesafeto_and_update_db():
-    p = download_dinesafeto()
-    dinesafetoestablishments = get_parsed_dinesafetoestablishments(path_to_xml=p)
-    with open(LAST_REFRESHED_TS_P, mode="w") as f:
-        f.write(str(time.time()))
-
-    with DB_ENGINE.connect() as conn:
-        with open("dinesafe/data/db/sql/create_establishment.sql") as f:
-            conn.execute(text(f.read()))
-        with open("dinesafe/data/db/sql/create_inspection.sql") as f:
-            conn.execute(text(f.read()))
-        for dinesafetoestablishment in dinesafetoestablishments.values():
-            establishment = convert_dinesafeto_establishment(
-                dinesafeto_establishment=dinesafetoestablishment
-            )
-            inspections = convert_dinesafeto_inspection(
-                dinesafeto_establishment=dinesafetoestablishment
-            )
-            add_new_establishment_if_not_exists(conn=conn, establishment=establishment)
-            for inspection in inspections:
-                add_new_inspection_if_not_exists(conn=conn, inspection=inspection)
-        conn.commit()
-    return None
-
-
-if should_refresh:
-    with st.spinner("Refreshing data..."):
-        refresh_dinesafeto_and_update_db()
-        with open(LAST_REFRESHED_TS_P) as f:
-            last_refreshed_ts = float(f.read())
-
-
 @st.experimental_singleton()
-def get_cached_establishments() -> List[Tuple[Establishment, Inspection]]:
-    out = []
+def get_cached_all_latest_inspections() -> Dict[str, Tuple[Establishment, Inspection]]:
     with DB_ENGINE.connect() as conn:
-        establishments = get_establishments(conn=conn)
-        for establishment in establishments:
-            inspections = get_inspections(conn=conn, establishment=establishment)
-            out.append((establishment, inspections))
-    return out
+        all_establishments = {
+            establishment.establishment_id: establishment
+            for establishment in get_all_establishments(conn=conn)
+        }
+        all_latest_inspections = {
+            inspection.establishment_id: inspection
+            for inspection in get_all_latest_inspections(conn=conn)
+        }
+        # some debugging
+        estab_ids = set(all_establishments.keys())
+        inspection_estab_ids = set(all_latest_inspections.keys())
+        if len(inspection_estab_ids - estab_ids) != 0:
+            logger.warning(
+                f"There are inspections without establishments: {inspection_estab_ids - estab_ids}"
+            )
+        return {
+            k: (all_establishments[k], all_latest_inspections[k])
+            for k in all_latest_inspections
+        }
 
 
-ESTABLISHMENTS = get_cached_establishments()
-st.write(ESTABLISHMENTS)
+ALL_LATEST_INSPECTIONS = get_cached_all_latest_inspections()
+for v in ALL_LATEST_INSPECTIONS.values():
+    st.write(v)
+    break
 
 with st.sidebar:
     st.markdown(
         "Data is taken from [open.toronto.ca](https://open.toronto.ca/dataset/dinesafe/)."
     )
-    if st.button("Refresh data"):
+    user_requested_refresh = st.button("Refresh data")
+    if user_requested_refresh:
+        logger.info("Refreshing due to user request.")
+    if user_requested_refresh or should_refresh:
         with st.spinner("Refreshing data..."):
-            logger.info("Refreshing due to user request.")
-            refresh_dinesafeto_and_update_db()
+            with DB_ENGINE.connect() as conn:
+                (
+                    new_establishment_counts,
+                    new_inspection_counts,
+                ) = refresh_dinesafeto_and_update_db(conn=conn)
+
+            st.info(
+                f"Added {format_number(new_establishment_counts)} new establishments "
+                + f"and {format_number(new_inspection_counts)} new inspections."
+            )
+            last_refreshed_ts = time.time()
+            with open(LAST_REFRESHED_TS_P, mode="w") as f:
+                f.write(str(last_refreshed_ts))
             st.experimental_singleton.clear()
+            st.warning("Please refresh page.")
+            st.stop()
 
     num_minutes = (last_refreshed_ts + REFRESH_SECONDS - time.time()) // 60
     st.markdown(
-        f"{format_number(len(ESTABLISHMENTS))} establishments loaded. \n\n"
+        f"{format_number(len(ALL_LATEST_INSPECTIONS))} establishments loaded. \n\n"
         f"Next refresh in {format_timespan(num_seconds=60*num_minutes)}. \n\n"
         "Github: [tianle91/dinesafe](https://github.com/tianle91/dinesafe)"
     )
 
 
-if len(ESTABLISHMENTS) == 0:
+if len(ALL_LATEST_INSPECTIONS) == 0:
     st.warning("No establishments loaded. Please refresh data")
     st.stop()
 
