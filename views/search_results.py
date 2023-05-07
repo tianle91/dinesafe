@@ -2,8 +2,6 @@ from typing import List, Tuple
 
 import streamlit as st
 from datetime import datetime
-from dinesafe.constants import YMD_FORMAT
-from dinesafe.data.dinesafeto.types import DinesafeTOEstablishment, DinesafeTOInspection
 from views.yelp_ratings import get_formatted_yelp_business_rating
 from dinesafe.data.db.types import Establishment, Inspection
 

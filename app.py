@@ -1,37 +1,26 @@
-from typing import List, Tuple, Dict
+from typing import List, Tuple
 
 import numpy as np
 import streamlit as st
 from humanfriendly import format_number, format_timespan
 from sklearn.feature_extraction.text import TfidfVectorizer
 from streamlit_js_eval import get_geolocation
-from dinesafe.data.dinesafeto.convert import (
-    convert_dinesafeto_establishment,
-    convert_dinesafeto_inspection,
-)
 from dinesafe.distances import normalize
 from dinesafe.distances.geo import get_haversine_distances, parse_geolocation
 from dinesafe.distances.name import get_name_distances
 from views.map_results import map_results
 from views.search_results import search_results
 import os
-from dinesafe.data.dinesafeto.parsed import (
-    download_dinesafeto,
-    get_parsed_dinesafetoestablishments,
-)
 import time
 from dinesafe.data.db.engine import get_local_engine
 from dinesafe.data.db.io import (
     create_establishment_table_if_not_exists,
     create_inspection_table_if_not_exists,
-    add_new_establishment,
-    add_new_inspections,
     get_all_establishments,
     get_all_latest_inspections,
 )
 from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
 from dinesafe.data.db.types import Establishment, Inspection
-from sqlalchemy import text
 import logging
 
 logger = logging.getLogger(__name__)
