@@ -16,7 +16,6 @@ from dinesafe.data.dinesafeto.convert import (
 from dinesafe.data.dinesafeto.types import DinesafeTOEstablishment
 
 
-#
 def test_add_new_establishment_if_not_exists(
     old_parsed_establishments: Dict[str, DinesafeTOEstablishment]
 ):
