@@ -20,11 +20,10 @@ def parse_inspection_row(row: Row) -> Inspection:
 
 
 def add_new_establishment_if_not_exists(conn: Connection, establishment: Establishment):
-    result = conn.execute(
-        text(
-            f"SELECT * FROM establishment WHERE establishment_id = {establishment.establishment_id}"
+    with open("dinesafe/data/db/sql/select_establishments.sql") as f:
+        result = conn.execute(
+            text(f.read().format(establishment_id=establishment.establishment_id))
         )
-    )
     if len(list(result)) == 0:
         logger.info(
             f"Adding establishment id: {establishment.establishment_id} since none was found"
@@ -37,7 +36,24 @@ def add_new_establishment_if_not_exists(conn: Connection, establishment: Establi
 
 
 def add_new_inspection_if_not_exists(conn: Connection, inspection: Inspection):
-    pass
+    with open("dinesafe/data/db/sql/select_existing_inspections.sql") as f:
+        result = conn.execute(
+            text(
+                f.read().format(
+                    establishment_id=inspection.establishment_id,
+                    inspection_id=inspection.inspection_id,
+                )
+            )
+        )
+    if len(list(result)) == 0:
+        logger.info(
+            f"Adding inspection_id id: {inspection.inspection_id} since none was found"
+        )
+        pd.DataFrame(data=[asdict(inspection)]).to_sql(
+            name="inspection", con=conn, if_exists="append", index=False
+        )
+        return True
+    return False
 
 
 def get_establishments(conn: Connection) -> Dict[str, Establishment]:
@@ -46,7 +62,11 @@ def get_establishments(conn: Connection) -> Dict[str, Establishment]:
 
 
 def get_inspections(conn: Connection, establishment: Establishment):
-    pass
+    with open("dinesafe/data/db/sql/select_inspections.sql") as f:
+        result = conn.execute(
+            text(f.read().format(establishment_id=establishment.establishment_id))
+        )
+    return [parse_inspection_row(row=row) for row in result]
 
 
 def get_new_inspections_since(conn: Connection, dt: date) -> List[Inspection]:

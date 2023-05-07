@@ -29,7 +29,9 @@ def convert_dinesafeto_inspection(
     for dinesafeto_inspections in dinesafeto_establishment.inspections.values():
         for dinesafeto_inspection in dinesafeto_inspections:
             extras_dict = {
-                "inspections": [str(inspection) for inspection in inspections]
+                "infractions": [
+                    str(infraction) for infraction in dinesafeto_inspection.infractions
+                ]
             }
             inspection = Inspection(
                 inspection_id=str(hash(str(dinesafeto_inspection))),
