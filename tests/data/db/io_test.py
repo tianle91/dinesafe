@@ -1,22 +1,23 @@
 from typing import Dict
+
 from sqlalchemy import text
 
 from dinesafe.data.db.engine import get_inmemory_engine
 from dinesafe.data.db.io import (
+    add_new_establishment,
+    add_new_inspections,
     create_establishment_table_if_not_exists,
     create_inspection_table_if_not_exists,
     get_all_establishments,
     get_all_latest_inspections,
     get_inspections,
     get_new_inspections,
-    add_new_establishment,
-    add_new_inspections,
 )
+from dinesafe.data.db.types import Establishment, Inspection
 from dinesafe.data.dinesafeto.convert import (
     convert_dinesafeto_establishment,
     convert_dinesafeto_inspection,
 )
-from dinesafe.data.db.types import Establishment, Inspection
 
 ESTABLISHMENT_ID = "0"
 

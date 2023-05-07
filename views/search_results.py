@@ -1,9 +1,10 @@
+from datetime import datetime
 from typing import List, Tuple
 
 import streamlit as st
-from datetime import datetime
-from views.yelp_ratings import get_formatted_yelp_business_rating
+
 from dinesafe.data.db.types import Establishment, Inspection
+from views.yelp_ratings import get_formatted_yelp_business_rating
 
 summary_md_str = """
 #### {rank}. **{name}**

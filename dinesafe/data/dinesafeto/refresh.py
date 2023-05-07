@@ -1,5 +1,15 @@
-from typing import List, Dict
+import logging
+from typing import Dict, List
 
+from sqlalchemy import Connection
+
+from dinesafe.data.db.io import (
+    add_new_establishment,
+    add_new_inspections,
+    get_all_establishments,
+    get_all_latest_inspections,
+)
+from dinesafe.data.db.types import Inspection
 from dinesafe.data.dinesafeto.convert import (
     convert_dinesafeto_establishment,
     convert_dinesafeto_inspection,
@@ -8,15 +18,6 @@ from dinesafe.data.dinesafeto.parsed import (
     download_dinesafeto,
     get_parsed_dinesafetoestablishments,
 )
-from dinesafe.data.db.io import (
-    add_new_establishment,
-    add_new_inspections,
-    get_all_establishments,
-    get_all_latest_inspections,
-)
-from dinesafe.data.db.types import Inspection
-import logging
-from sqlalchemy import Connection
 
 logger = logging.getLogger(__name__)
 

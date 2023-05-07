@@ -6,7 +6,6 @@ import streamlit as st
 
 from dinesafe.data.db.types import Establishment, Inspection
 
-
 establishment_icon_data_default = {
     "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/default.svg",
     "width": 100,

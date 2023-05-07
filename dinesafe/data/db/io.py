@@ -1,9 +1,9 @@
 import logging
 from dataclasses import asdict
 from typing import Dict, List
-from sqlalchemy import CursorResult
+
 import pandas as pd
-from sqlalchemy import Connection, Row, text
+from sqlalchemy import Connection, CursorResult, Row, text
 
 from dinesafe.data.db.types import Establishment, Inspection
 

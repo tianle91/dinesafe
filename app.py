@@ -1,3 +1,6 @@
+import logging
+import os
+import time
 from typing import List, Tuple
 
 import numpy as np
@@ -5,13 +8,7 @@ import streamlit as st
 from humanfriendly import format_number, format_timespan
 from sklearn.feature_extraction.text import TfidfVectorizer
 from streamlit_js_eval import get_geolocation
-from dinesafe.distances import normalize
-from dinesafe.distances.geo import get_haversine_distances, parse_geolocation
-from dinesafe.distances.name import get_name_distances
-from views.map_results import map_results
-from views.search_results import search_results
-import os
-import time
+
 from dinesafe.data.db.engine import get_local_engine
 from dinesafe.data.db.io import (
     create_establishment_table_if_not_exists,
@@ -19,9 +16,13 @@ from dinesafe.data.db.io import (
     get_all_establishments,
     get_all_latest_inspections,
 )
-from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
 from dinesafe.data.db.types import Establishment, Inspection
-import logging
+from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
+from dinesafe.distances import normalize
+from dinesafe.distances.geo import get_haversine_distances, parse_geolocation
+from dinesafe.distances.name import get_name_distances
+from views.map_results import map_results
+from views.search_results import search_results
 
 logger = logging.getLogger(__name__)
 

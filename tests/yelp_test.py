@@ -1,7 +1,8 @@
-from dinesafe.data.dinesafeto.convert import convert_dinesafeto_establishment
-from dinesafe.yelp import get_yelp_biz_search_top_result
 from typing import Dict
+
+from dinesafe.data.dinesafeto.convert import convert_dinesafeto_establishment
 from dinesafe.data.dinesafeto.types import DinesafeTOEstablishment
+from dinesafe.yelp import get_yelp_biz_search_top_result
 
 
 def test_get_yelp_biz_search_result(
