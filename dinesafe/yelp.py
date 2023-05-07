@@ -1,24 +1,24 @@
+import logging
 import os
 from typing import Optional
 
 import requests
 import requests_cache
 
-from dinesafe.types import Establishment
-import logging
+from dinesafe.data.db.types import Establishment
 
 logger = logging.getLogger(__name__)
 
 requests_cache.install_cache(
+    name="yelp_api_cache",
     backend="sqlite",
-    # 1 day
-    urls_expire_after={"*": 86400},
+    urls_expire_after={"*": 86400},  # 1 day
 )
 
 YELP_API_KEY = os.getenv("YELP_API_KEY", None)
 
 
-def get_yelp_biz_search_result(establishment: Establishment) -> Optional[dict]:
+def get_yelp_biz_search_top_result(establishment: Establishment) -> Optional[dict]:
     if YELP_API_KEY is None:
         logger.error("YELP_API_KEY is None")
     else:
@@ -40,10 +40,16 @@ def get_yelp_biz_search_result(establishment: Establishment) -> Optional[dict]:
             businesses = response.json()["businesses"]
             if len(businesses) > 0:
                 top_business_result = businesses[0]
-                establishment.yelp_biz_result = top_business_result
                 return top_business_result
             else:
                 logger.error(
                     f"Received no business results for establishment: {establishment}"
                 )
+    return None
+
+
+def get_yelp_biz_id(establishment: Establishment) -> Optional[str]:
+    biz_search_top_result = get_yelp_biz_search_top_result(establishment=establishment)
+    if biz_search_top_result is not None:
+        return biz_search_top_result["id"]
     return None

@@ -1,12 +1,38 @@
+import logging
+import os
+import time
+from datetime import datetime
+from typing import Dict, Optional
+
+import wget
 import xmltodict
 
-from datetime import date, datetime
-from typing import List, Dict
 from dinesafe.constants import YMD_FORMAT
-from dinesafe.types import Infraction, Establishment, Inspection
-import logging
+from dinesafe.data.dinesafeto.types import (
+    DinesafeTOEstablishment,
+    DinesafeTOInfraction,
+    DinesafeTOInspection,
+)
 
 logger = logging.getLogger(__name__)
+
+# alternative sources
+# https://open.toronto.ca/dataset/dinesafe/
+# https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/dinesafe
+URL = "https://secure.toronto.ca/opendata/ds/od_xml/v2?format=xml&stream=n"
+
+
+def download_dinesafeto(download_directory="data/dinesafe") -> Optional[str]:
+    now_ts = time.time()
+    download_fname = f"{now_ts}.xml"
+    download_path = os.path.join(download_directory, download_fname)
+    logger.info(f"Downloading to {download_path}")
+    try:
+        wget.download(URL, out=download_path)
+        return download_path
+    except Exception as e:
+        logger.error(str(e))
+    return None
 
 
 def get_parsed_value(d, k):
@@ -20,8 +46,8 @@ def get_parsed_value(d, k):
     return v
 
 
-def get_infraction(d: dict) -> Infraction:
-    return Infraction(
+def get_infraction(d: dict) -> DinesafeTOInfraction:
+    return DinesafeTOInfraction(
         severity=get_parsed_value(d, "SEVERITY"),
         deficiency=get_parsed_value(d, "DEFICIENCY"),
         action=get_parsed_value(d, "ACTION"),
@@ -30,7 +56,7 @@ def get_infraction(d: dict) -> Infraction:
     )
 
 
-def get_inspection(d: dict) -> Inspection:
+def get_inspection(d: dict) -> DinesafeTOInspection:
     # get list of dicts for infraction
     infraction_d_or_l = d.get("INFRACTION", [])
     if isinstance(infraction_d_or_l, dict):
@@ -38,14 +64,14 @@ def get_inspection(d: dict) -> Inspection:
     else:
         infraction_l = infraction_d_or_l
 
-    return Inspection(
+    return DinesafeTOInspection(
         status=get_parsed_value(d, "STATUS"),
         date=get_parsed_value(d, "DATE"),
         infractions=[get_infraction(d) for d in infraction_l],
     )
 
 
-def get_establishment(d: dict) -> Establishment:
+def get_establishment(d: dict) -> DinesafeTOEstablishment:
     # get list of dicts for inspection
     inspection_d_or_l = d.get("INSPECTION", [])
     if isinstance(inspection_d_or_l, dict):
@@ -60,7 +86,7 @@ def get_establishment(d: dict) -> Establishment:
             inspection
         ]
 
-    return Establishment(
+    return DinesafeTOEstablishment(
         id=get_parsed_value(d, "ID"),
         name=get_parsed_value(d, "NAME"),
         type=get_parsed_value(d, "TYPE"),
@@ -72,9 +98,11 @@ def get_establishment(d: dict) -> Establishment:
     )
 
 
-def get_parsed_establishments(p: str) -> Dict[str, Establishment]:
+def get_parsed_dinesafetoestablishments(
+    path_to_xml: str,
+) -> Dict[str, DinesafeTOEstablishment]:
     establishment_l = []
-    with open(p) as f:
+    with open(path_to_xml) as f:
         establishment_l = xmltodict.parse(f.read())["DINESAFE_DATA"]["ESTABLISHMENT"]
     establishments = {}
     for d in establishment_l:
@@ -90,35 +118,3 @@ def get_parsed_establishments(p: str) -> Dict[str, Establishment]:
             )
         establishments[establishment.id] = establishment
     return establishments
-
-
-def get_new_establishments(
-    new: Dict[str, Establishment],
-    old: Dict[str, Establishment],
-) -> Dict[str, Establishment]:
-    return {k: new[k] for k in set(new.keys()) - set(old.keys())}
-
-
-def get_new_inspections(
-    new: Dict[str, Establishment],
-    old: Dict[str, Establishment],
-) -> Dict[str, Dict[date, List[Inspection]]]:
-    out = {}
-    for k in old:
-        old_estab = old[k]
-        if k not in new:
-            logger.warning(f"Establishment: {k} not found in new!")
-        else:
-            new_estab = new[k]
-            new_inspections = {}
-            for dt in new_estab.inspections:
-                new_inspections_dt = [
-                    inspection
-                    for inspection in new_estab.inspections[dt]
-                    if inspection not in old_estab.inspections.get(dt, [])
-                ]
-                if len(new_inspections_dt) > 0:
-                    new_inspections[dt] = new_inspections_dt
-            if len(new_inspections) > 0:
-                out[k] = new_inspections
-    return out

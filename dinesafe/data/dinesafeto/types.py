@@ -1,7 +1,7 @@
-from dataclasses import dataclass
-from datetime import date
-from typing import List, Optional, Dict
 import logging
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -17,11 +17,11 @@ amount_fined: {amount_fined}
 
 
 @dataclass
-class Infraction:
+class DinesafeTOInfraction:
     severity: str
     deficiency: str
     action: str
-    conviction_date: Optional[date] = None
+    conviction_date: Optional[datetime] = None
     court_outcome: Optional[str] = None
     amount_fined: Optional[float] = None
 
@@ -35,9 +35,6 @@ class Infraction:
             amount_fined=self.amount_fined,
         )
 
-    def __hash__(self) -> int:
-        return hash(str(self))
-
 
 INSPECTION_STR = """
 status: {status}
@@ -48,10 +45,10 @@ infractions:
 
 
 @dataclass
-class Inspection:
+class DinesafeTOInspection:
     status: str
-    date: date
-    infractions: List[Infraction]
+    date: datetime
+    infractions: List[DinesafeTOInfraction]
 
     def __str__(self) -> str:
         return INSPECTION_STR.format(
@@ -62,12 +59,9 @@ class Inspection:
             ),
         )
 
-    def __hash__(self) -> int:
-        return hash(str(self))
-
 
 @dataclass
-class Establishment:
+class DinesafeTOEstablishment:
     id: str
     name: str
     type: str
@@ -75,5 +69,8 @@ class Establishment:
     latitude: float
     longitude: float
     status: str
-    inspections: Dict[date, List[Inspection]]
-    yelp_biz_result: Optional[dict] = None
+    inspections: Dict[datetime, List[DinesafeTOInspection]]
+
+    @property
+    def external_id(self) -> str:
+        return f"DinesafeTO_{self.id}"

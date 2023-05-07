@@ -13,5 +13,8 @@ clean:
 
 .PHONY: test
 test: .git/hooks/pre-commit
-	rm -rf data
 	tox run
+
+.PHONY: clean_cache
+clean_cache:
+	rm -rf LAST_REFRESHED_TS data/dinesafe/*.xml *.sqlite

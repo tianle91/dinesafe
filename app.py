@@ -1,3 +1,6 @@
+import logging
+import os
+import time
 from typing import List, Tuple
 
 import numpy as np
@@ -6,14 +9,22 @@ from humanfriendly import format_number, format_timespan
 from sklearn.feature_extraction.text import TfidfVectorizer
 from streamlit_js_eval import get_geolocation
 
-from dinesafe.parsed import get_parsed_establishments
-from dinesafe.data import DataSource
-
+from dinesafe.data.db.engine import get_local_engine
+from dinesafe.data.db.io import (
+    create_establishment_table_if_not_exists,
+    create_inspection_table_if_not_exists,
+    get_all_establishments,
+    get_all_latest_inspections,
+)
+from dinesafe.data.db.types import Establishment, Inspection
+from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
 from dinesafe.distances import normalize
 from dinesafe.distances.geo import get_haversine_distances, parse_geolocation
 from dinesafe.distances.name import get_name_distances
 from views.map_results import map_results
 from views.search_results import search_results
+
+logger = logging.getLogger(__name__)
 
 
 GOOGLE_ANALYTICS_TAG = """
@@ -32,46 +43,82 @@ st.markdown(body=GOOGLE_ANALYTICS_TAG, unsafe_allow_html=True)
 
 SHOW_TOP_N_RELEVANT = 25
 REFRESH_SECONDS = 43200  # 12 hours
+LAST_REFRESHED_TS_P = "LAST_REFRESHED_TS"
+DB_ENGINE = get_local_engine()
+
+with DB_ENGINE.connect() as conn:
+    create_establishment_table_if_not_exists(conn=conn)
+    create_inspection_table_if_not_exists(conn=conn)
 
 st.title("DinesafeTO")
 
-DATA_SOURCE = DataSource()
 
-# auto refresh upon loading
-time_since_latest = DATA_SOURCE.time_since_latest_timestamp
-if time_since_latest is None or time_since_latest > REFRESH_SECONDS:
-    DATA_SOURCE.refresh_and_get_latest_path()
-
-DATA_SOURCE_PATH = DATA_SOURCE.latest_path
-if DATA_SOURCE_PATH is None:
-    raise ValueError("ds_path is None")
+should_refresh = False
+if os.path.isfile(LAST_REFRESHED_TS_P):
+    with open(LAST_REFRESHED_TS_P) as f:
+        LAST_REFRESHED_TS = float(f.read())
+    ts_now = time.time()
+    if ts_now > LAST_REFRESHED_TS + REFRESH_SECONDS:
+        should_refresh = True
+        logger.info(
+            f"Will refresh due to stale: {ts_now} > {LAST_REFRESHED_TS} + {REFRESH_SECONDS}"
+        )
+else:
+    should_refresh = True
+    logger.info(f"Will refresh because {LAST_REFRESHED_TS_P} is not found.")
 
 
 @st.experimental_singleton()
-def get_parsed_establishments_cached():
-    return get_parsed_establishments(p=DATA_SOURCE_PATH)
+def get_cached_all_latest_inspections() -> List[Tuple[Establishment, Inspection]]:
+    with DB_ENGINE.connect() as conn:
+        all_establishments = {
+            establishment.establishment_id: establishment
+            for establishment in get_all_establishments(conn=conn)
+        }
+        all_latest_inspections = {
+            inspection.establishment_id: inspection
+            for inspection in get_all_latest_inspections(conn=conn)
+        }
+        return [
+            (all_establishments[k], all_latest_inspections[k])
+            for k in all_latest_inspections
+        ]
 
-
-ESTABLISHMENTS = get_parsed_establishments_cached()
 
 with st.sidebar:
     st.markdown(
         "Data is taken from [open.toronto.ca](https://open.toronto.ca/dataset/dinesafe/)."
     )
-    if st.button("Refresh data"):
+    user_requested_refresh = st.button("Refresh data")
+    if user_requested_refresh:
+        logger.info("Refreshing due to user request.")
+    if user_requested_refresh or should_refresh:
         with st.spinner("Refreshing data..."):
-            DATA_SOURCE_PATH = DATA_SOURCE.refresh_and_get_latest_path()
+            with DB_ENGINE.connect() as conn:
+                (
+                    new_establishment_counts,
+                    new_inspection_counts,
+                ) = refresh_dinesafeto_and_update_db(conn=conn)
+
+            st.info(
+                f"Added {format_number(new_establishment_counts)} new establishments "
+                + f"and {format_number(new_inspection_counts)} new inspections."
+            )
+            LAST_REFRESHED_TS = time.time()
+            with open(LAST_REFRESHED_TS_P, mode="w") as f:
+                f.write(str(LAST_REFRESHED_TS))
             st.experimental_singleton.clear()
 
-    num_minutes = (REFRESH_SECONDS - DATA_SOURCE.time_since_latest_timestamp) // 60
+    ALL_LATEST_INSPECTIONS = get_cached_all_latest_inspections()
+    num_minutes = (LAST_REFRESHED_TS + REFRESH_SECONDS - time.time()) // 60
     st.markdown(
-        f"{format_number(len(ESTABLISHMENTS))} establishments loaded. \n\n"
+        f"{format_number(len(ALL_LATEST_INSPECTIONS))} establishments loaded. \n\n"
         f"Next refresh in {format_timespan(num_seconds=60*num_minutes)}. \n\n"
         "Github: [tianle91/dinesafe](https://github.com/tianle91/dinesafe)"
     )
 
 
-if len(ESTABLISHMENTS) == 0:
+if len(ALL_LATEST_INSPECTIONS) == 0:
     st.warning("No establishments loaded. Please refresh data")
     st.stop()
 
@@ -83,9 +130,10 @@ def get_tfidfs(establishment_names: List[str]) -> Tuple[TfidfVectorizer, np.ndar
     return tfidf, establishment_vecs
 
 
-with st.spinner(f"Indexing {len(ESTABLISHMENTS)} establishments..."):
-    establishment_names = [est.name for est in ESTABLISHMENTS.values()]
-    tfidf, establishment_vecs = get_tfidfs(establishment_names=establishment_names)
+with st.spinner(f"Indexing {len(ALL_LATEST_INSPECTIONS)} establishments..."):
+    TFIDF, ESTABLISHMENT_TFIDF_VECS = get_tfidfs(
+        establishment_names=[e.name for e, _ in ALL_LATEST_INSPECTIONS]
+    )
 
 search_term = st.text_input(
     label="Search for business name (leave empty for all businesses)",
@@ -94,14 +142,14 @@ search_term = st.text_input(
 )
 
 
-name_distances = [1.0 for _ in ESTABLISHMENTS]
-establishment_distances = [1.0 for _ in ESTABLISHMENTS]
+NAME_DISTANCES = [1.0 for _ in ALL_LATEST_INSPECTIONS]
+GEO_DISTANCES = [1.0 for _ in ALL_LATEST_INSPECTIONS]
 
 if len(search_term) > 0:
-    name_distances = get_name_distances(
-        search_term=search_term, tfidf=tfidf, source_vecs=establishment_vecs
+    NAME_DISTANCES = get_name_distances(
+        search_term=search_term, tfidf=TFIDF, source_vecs=ESTABLISHMENT_TFIDF_VECS
     )
-    name_distances = normalize(arr=name_distances, lowest_val=1.0, hightest_val=2.0)
+    NAME_DISTANCES = normalize(arr=NAME_DISTANCES, lowest_val=1.0, hightest_val=2.0)
 
 
 geolocation = None
@@ -113,28 +161,30 @@ if st.checkbox("Near me"):
 if geolocation is not None:
     establishment_locs = [
         [establishment.latitude, establishment.longitude]
-        for establishment in ESTABLISHMENTS.values()
+        for establishment, _ in ALL_LATEST_INSPECTIONS
     ]
-    establishment_distances = get_haversine_distances(
+    GEO_DISTANCES = get_haversine_distances(
         center_loc=[geolocation.coords.latitude, geolocation.coords.longitude],
         locs=establishment_locs,
     )
-    establishment_distances = normalize(arr=establishment_distances)
+    GEO_DISTANCES = normalize(arr=GEO_DISTANCES)
 
 
-# find most relevant establishments
-most_relevant_establishments = []
-for est, d_name, d_estab in zip(
-    ESTABLISHMENTS.values(), name_distances, establishment_distances
+RELEVANT_INSPECTIONS = []
+# first filter by name distance
+for establishment_inspection, name_distance, geo_distance in zip(
+    ALL_LATEST_INSPECTIONS, NAME_DISTANCES, GEO_DISTANCES
 ):
-    if d_name < 1.2:
-        most_relevant_establishments.append((est, d_estab))
-most_relevant_establishments = sorted(most_relevant_establishments, key=lambda x: x[1])
-num_close_names = len(most_relevant_establishments)
+    if name_distance < 1.2:
+        RELEVANT_INSPECTIONS.append((establishment_inspection, geo_distance))
+# then sort by geo distance
+RELEVANT_INSPECTIONS = sorted(RELEVANT_INSPECTIONS, key=lambda x: x[1])
+RELEVANT_INSPECTIONS = list(map(lambda t: t[0], RELEVANT_INSPECTIONS))
+
+# get the top relevant
+num_close_names = len(RELEVANT_INSPECTIONS)
 will_be_truncated = num_close_names > SHOW_TOP_N_RELEVANT
-most_relevant_establishments = [
-    est for est, _ in most_relevant_establishments[:SHOW_TOP_N_RELEVANT]
-]
+RELEVANT_INSPECTIONS = RELEVANT_INSPECTIONS[:SHOW_TOP_N_RELEVANT]
 if will_be_truncated:
     warning_message = f"Showing top {SHOW_TOP_N_RELEVANT} out of {num_close_names}. "
     if geolocation is None:
@@ -143,7 +193,7 @@ if will_be_truncated:
 
 st.markdown("----")
 map_results(
-    most_relevant=most_relevant_establishments,
+    most_relevant=RELEVANT_INSPECTIONS,
     center_loc=(
         [geolocation.coords.latitude, geolocation.coords.longitude]
         if geolocation is not None
@@ -151,4 +201,4 @@ map_results(
     ),
 )
 st.markdown("----")
-search_results(most_relevant=most_relevant_establishments)
+search_results(most_relevant=RELEVANT_INSPECTIONS)
