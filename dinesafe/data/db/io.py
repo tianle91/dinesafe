@@ -26,7 +26,7 @@ def add_new_establishment_if_not_exists(conn: Connection, establishment: Establi
         )
     )
     if len(list(result)) == 0:
-        print(
+        logger.info(
             f"Adding establishment id: {establishment.establishment_id} since none was found"
         )
         pd.DataFrame(data=[asdict(establishment)]).to_sql(
