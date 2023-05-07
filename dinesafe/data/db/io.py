@@ -1,8 +1,7 @@
 import logging
 from dataclasses import asdict
-from datetime import date
 from typing import Dict, List
-
+from sqlalchemy import CursorResult
 import pandas as pd
 from sqlalchemy import Connection, Row, text
 
@@ -11,75 +10,76 @@ from dinesafe.data.db.types import Establishment, Inspection
 logger = logging.getLogger(__name__)
 
 
-def parse_establishment_row(row: Row) -> Establishment:
+def _parse_establishment_row(row: Row) -> Establishment:
     return Establishment(**row._asdict())
 
 
-def parse_inspection_row(row: Row) -> Inspection:
+def _parse_inspection_row(row: Row) -> Inspection:
     return Inspection(**row._asdict())
 
 
-# TODO: read and writes are too slow, need to batch some sql queries
+def _execute_sql_from_file(
+    conn: Connection, sql_query_file: str, **kwargs
+) -> CursorResult:
+    with open(sql_query_file) as f:
+        sql_str = f.read()
+    sql_str = sql_str.format(**kwargs) if len(kwargs) > 0 else sql_str
+    return conn.execute(text(sql_str))
 
 
-def add_new_establishment_if_not_exists(conn: Connection, establishment: Establishment):
-    with open("dinesafe/data/db/sql/select_establishments.sql") as f:
-        result = conn.execute(
-            text(f.read().format(establishment_id=establishment.establishment_id))
-        )
-    if len(list(result)) == 0:
-        logger.info(
-            f"Adding establishment id: {establishment.establishment_id} since none was found"
-        )
-        pd.DataFrame(data=[asdict(establishment)]).to_sql(
-            name="establishment", con=conn, if_exists="append", index=False
-        )
-        return True
-    return False
+def create_establishment_table_if_not_exists(conn: Connection):
+    _execute_sql_from_file(
+        conn=conn, sql_query_file="dinesafe/data/db/sql/create_establishment.sql"
+    )
 
 
-def add_new_inspection_if_not_exists(conn: Connection, inspection: Inspection):
-    with open("dinesafe/data/db/sql/select_existing_inspections.sql") as f:
-        result = conn.execute(
-            text(
-                f.read().format(
-                    establishment_id=inspection.establishment_id,
-                    inspection_id=inspection.inspection_id,
-                )
-            )
-        )
-    if len(list(result)) == 0:
-        logger.info(
-            f"Adding inspection_id id: {inspection.inspection_id} since none was found"
-        )
-        pd.DataFrame(data=[asdict(inspection)]).to_sql(
-            name="inspection", con=conn, if_exists="append", index=False
-        )
-        return True
-    return False
+def create_inspection_table_if_not_exists(conn: Connection):
+    _execute_sql_from_file(
+        conn=conn, sql_query_file="dinesafe/data/db/sql/create_inspection.sql"
+    )
 
 
-def get_establishments(conn: Connection) -> Dict[str, Establishment]:
+def get_all_establishments(conn: Connection) -> Dict[str, Establishment]:
     result = conn.execute(text("SELECT * FROM establishment"))
-    return [parse_establishment_row(row=row) for row in result]
+    return [_parse_establishment_row(row=row) for row in result]
 
 
 def get_inspections(conn: Connection, establishment: Establishment):
-    with open("dinesafe/data/db/sql/select_inspections.sql") as f:
-        result = conn.execute(
-            text(f.read().format(establishment_id=establishment.establishment_id))
-        )
-    return [parse_inspection_row(row=row) for row in result]
+    result = _execute_sql_from_file(
+        conn=conn,
+        sql_query_file="dinesafe/data/db/sql/select_inspections.sql",
+        establishment_id=establishment.establishment_id,
+    )
+    return [_parse_inspection_row(row=row) for row in result]
+
+
+def add_new_establishment(conn: Connection, establishment: Establishment):
+    pd.DataFrame(data=[asdict(establishment)]).to_sql(
+        name="establishment", con=conn, if_exists="append", index=False
+    )
+
+
+def add_new_inspections(conn: Connection, inspections: List[Inspection]):
+    pd.DataFrame(data=[asdict(inspection) for inspection in inspections]).to_sql(
+        name="inspection", con=conn, if_exists="append", index=False
+    )
 
 
 def get_new_inspections(
     conn: Connection, establishment: Establishment, last_inspection_timestamp: float
 ) -> List[Inspection]:
-    with open("dinesafe/data/db/sql/select_new_inspections.sql") as f:
-        query = f.read().format(
-            establishment_id=establishment.establishment_id,
-            last_inspection_timestamp=last_inspection_timestamp,
-        )
-    print(query)
-    result = conn.execute(text(query))
-    return [parse_inspection_row(row=row) for row in result]
+    result = _execute_sql_from_file(
+        conn=conn,
+        sql_query_file="dinesafe/data/db/sql/select_new_inspections.sql",
+        establishment_id=establishment.establishment_id,
+        last_inspection_timestamp=last_inspection_timestamp,
+    )
+    return [_parse_inspection_row(row=row) for row in result]
+
+
+def get_all_latest_inspections(conn: Connection):
+    result = _execute_sql_from_file(
+        conn=conn,
+        sql_query_file="dinesafe/data/db/sql/select_all_latest_inspections.sql",
+    )
+    return [_parse_inspection_row(row=row) for row in result]

@@ -1,108 +1,90 @@
 from typing import Dict
-import copy
 from sqlalchemy import text
 
 from dinesafe.data.db.engine import get_inmemory_engine
 from dinesafe.data.db.io import (
-    add_new_establishment_if_not_exists,
-    add_new_inspection_if_not_exists,
-    get_establishments,
+    create_establishment_table_if_not_exists,
+    create_inspection_table_if_not_exists,
+    get_all_establishments,
+    get_all_latest_inspections,
     get_inspections,
     get_new_inspections,
+    add_new_establishment,
+    add_new_inspections,
 )
 from dinesafe.data.dinesafeto.convert import (
     convert_dinesafeto_establishment,
     convert_dinesafeto_inspection,
 )
-from dinesafe.data.dinesafeto.types import DinesafeTOEstablishment
+from dinesafe.data.db.types import Establishment, Inspection
+
+ESTABLISHMENT_ID = "0"
+
+ESTABLISHMENT = Establishment(
+    establishment_id=ESTABLISHMENT_ID,
+    name="establishment_0",
+    address="address_1",
+    latitude=0.0,
+    longitude=0.0,
+)
+
+INSPECTION = Inspection(
+    inspection_id="1",
+    establishment_id=ESTABLISHMENT_ID,
+    is_pass=True,
+    timestamp=0,
+)
 
 
-def test_add_new_establishment_if_not_exists(
-    old_parsed_dinesafetoestablishments: Dict[str, DinesafeTOEstablishment]
-):
+def test_create_establishment_table_if_not_exists():
     engine = get_inmemory_engine()
     with engine.connect() as conn:
-        with open("dinesafe/data/db/sql/create_establishment.sql") as f:
-            conn.execute(text(f.read()))
-        db_establishments = get_establishments(conn=conn)
+        create_establishment_table_if_not_exists(conn=conn)
+
+
+def test_create_inspection_table_if_not_exists():
+    engine = get_inmemory_engine()
+    with engine.connect() as conn:
+        create_inspection_table_if_not_exists(conn=conn)
+
+
+def test_get_all_establishments():
+    engine = get_inmemory_engine()
+    with engine.connect() as conn:
+        create_establishment_table_if_not_exists(conn=conn)
+        # nothing in db prior to inserting
+        db_establishments = get_all_establishments(conn=conn)
         assert len(db_establishments) == 0, db_establishments
 
-        for dinesafeto_establishment in old_parsed_dinesafetoestablishments.values():
-            establishment = convert_dinesafeto_establishment(
-                dinesafeto_establishment=dinesafeto_establishment
-            )
-            add_new_establishment_if_not_exists(conn=conn, establishment=establishment)
-            break
-        db_establishments = get_establishments(conn=conn)
+
+def test_add_new_establishment():
+    engine = get_inmemory_engine()
+    with engine.connect() as conn:
+        create_establishment_table_if_not_exists(conn=conn)
+        # nothing in db prior to inserting
+        db_establishments = get_all_establishments(conn=conn)
+        assert len(db_establishments) == 0, db_establishments
+        # insert one and get one
+        add_new_establishment(conn=conn, establishment=ESTABLISHMENT)
+        db_establishments = get_all_establishments(conn=conn)
         assert len(db_establishments) == 1, db_establishments
 
 
-def test_add_new_inspection_if_not_exists(
-    old_parsed_dinesafetoestablishments: Dict[str, DinesafeTOEstablishment]
-):
+def test_add_new_inspections():
     engine = get_inmemory_engine()
     with engine.connect() as conn:
-        with open("dinesafe/data/db/sql/create_inspection.sql") as f:
-            conn.execute(text(f.read()))
+        create_inspection_table_if_not_exists(conn=conn)
+        create_establishment_table_if_not_exists(conn=conn)
+        # nothing in db prior to inserting
+        db_establishments = get_all_establishments(conn=conn)
+        assert len(db_establishments) == 0, db_establishments
+        db_inspections = get_inspections(conn=conn, establishment=ESTABLISHMENT)
+        assert len(db_inspections) == 0, db_inspections
 
-        for dinesafeto_establishment in old_parsed_dinesafetoestablishments.values():
-            establishment = convert_dinesafeto_establishment(
-                dinesafeto_establishment=dinesafeto_establishment
-            )
-            db_inspections = get_inspections(conn=conn, establishment=establishment)
-            assert len(db_inspections) == 0, db_inspections
-
-            inspections = convert_dinesafeto_inspection(
-                dinesafeto_establishment=dinesafeto_establishment
-            )
-            for inspection in inspections:
-                add_new_inspection_if_not_exists(conn=conn, inspection=inspection)
-                break
-            break
-
-        db_inspections = get_inspections(conn=conn, establishment=establishment)
+        # insert one and get one
+        add_new_establishment(conn=conn, establishment=ESTABLISHMENT)
+        add_new_inspections(conn=conn, inspections=[INSPECTION])
+        db_establishments = get_all_establishments(conn=conn)
+        assert len(db_establishments) == 1, db_establishments
+        db_inspections = get_inspections(conn=conn, establishment=ESTABLISHMENT)
         assert len(db_inspections) == 1, db_inspections
-
-
-def test_get_new_inspections(
-    old_parsed_dinesafetoestablishments: Dict[str, DinesafeTOEstablishment]
-):
-    engine = get_inmemory_engine()
-    with engine.connect() as conn:
-        with open("dinesafe/data/db/sql/create_inspection.sql") as f:
-            conn.execute(text(f.read()))
-
-        for dinesafeto_establishment in old_parsed_dinesafetoestablishments.values():
-            establishment = convert_dinesafeto_establishment(
-                dinesafeto_establishment=dinesafeto_establishment
-            )
-            db_inspections = get_inspections(conn=conn, establishment=establishment)
-            assert len(db_inspections) == 0, db_inspections
-
-            inspections = convert_dinesafeto_inspection(
-                dinesafeto_establishment=dinesafeto_establishment
-            )
-            ts_to_number_of_inspections = {}
-            for inspection in inspections:
-                ts_to_number_of_inspections[inspection.timestamp] = (
-                    ts_to_number_of_inspections.get(inspection.timestamp, 0) + 1
-                )
-            assert len(ts_to_number_of_inspections) > 0, ts_to_number_of_inspections
-
-            for inspection in inspections:
-                add_new_inspection_if_not_exists(conn=conn, inspection=inspection)
-            break
-
-        earliest_inspection_ts = min(ts_to_number_of_inspections.keys())
-        total_inspection_counts = sum(ts_to_number_of_inspections.values())
-
-        db_inspections = get_new_inspections(
-            conn=conn,
-            establishment=establishment,
-            last_inspection_timestamp=earliest_inspection_ts,
-        )
-        assert (
-            len(db_inspections)
-            == total_inspection_counts
-            - ts_to_number_of_inspections[earliest_inspection_ts]
-        ), ts_to_number_of_inspections
