@@ -19,7 +19,7 @@ def parse_inspection_row(row: Row) -> Inspection:
     return Inspection(**row._asdict())
 
 
-# TODO: too slow, need to batch some sql queries
+# TODO: read and writes are too slow, need to batch some sql queries
 
 
 def add_new_establishment_if_not_exists(conn: Connection, establishment: Establishment):
