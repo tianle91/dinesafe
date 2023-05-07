@@ -122,9 +122,6 @@ with st.sidebar:
         "Data is taken from [open.toronto.ca](https://open.toronto.ca/dataset/dinesafe/)."
     )
     if st.button("Refresh data"):
-        should_refresh = True
-
-    if should_refresh:
         with st.spinner("Refreshing data..."):
             logger.info("Refreshing due to user request.")
             refresh_dinesafeto_and_update_db()
