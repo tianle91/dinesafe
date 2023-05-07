@@ -1,11 +1,11 @@
-from typing import List
+from typing import List, Tuple
 
 import streamlit as st
-
+from datetime import datetime
 from dinesafe.constants import YMD_FORMAT
-from dinesafe.types import Establishment, Inspection
-
+from dinesafe.data.dinesafeto.types import DinesafeTOEstablishment, DinesafeTOInspection
 from views.yelp_ratings import get_formatted_yelp_business_rating
+from dinesafe.data.db.types import Establishment, Inspection
 
 summary_md_str = """
 #### {rank}. **{name}**
@@ -18,46 +18,26 @@ summary_md_str = """
 """
 
 
-def search_results(most_relevant: List[Establishment]):
-    for i, establishment in enumerate(most_relevant):
-        # get all inspections regardless of date
-        inspections = []
-        for dt in establishment.inspections:
-            inspections += establishment.inspections[dt]
-
-        # find latest inspection
-        latest_inspections: List[Inspection] = sorted(
-            inspections, key=lambda insp: insp.date, reverse=True
-        )
-        latest_inspection = (
-            latest_inspections[0] if len(latest_inspections) > 0 else None
-        )
+def search_results(most_relevant: List[Tuple[Establishment, Inspection]]):
+    for i, establishment_inspection in enumerate(most_relevant):
+        establishment, latest_inspection = establishment_inspection
 
         last_inspection_dt_str = "NA"
-        last_inspection_deficiencies = []
         if latest_inspection is not None:
-            last_inspection_dt_str = latest_inspection.date.strftime(YMD_FORMAT)
-            last_inspection_deficiencies = [
-                infraction.deficiency for infraction in latest_inspection.infractions
-            ]
+            last_inspection_dt_str = datetime.fromtimestamp(
+                latest_inspection.timestamp
+            ).strftime("%Y-%m-%d")
 
-        status_color = "Green" if establishment.status.lower() == "pass" else "Red"
+        status_color = "Green" if latest_inspection.is_pass else "Red"
         md_str = summary_md_str.format(
             rank=i + 1,
             name=establishment.name,
             address=establishment.address,
             status_color=status_color,
-            status=establishment.status,
+            status="Pass" if latest_inspection.is_pass else "Fail",
             last_inspection_dt_str=last_inspection_dt_str,
         )
         st.markdown(md_str, unsafe_allow_html=True)
-
-        if len(last_inspection_deficiencies) > 0:
-            with st.expander(f"Found {len(last_inspection_deficiencies)} deficiencies"):
-                md_str = ""
-                for deficiency_str in last_inspection_deficiencies:
-                    md_str += f"* {deficiency_str}\n"
-                st.markdown(md_str)
 
         yelp_rating_md_str = get_formatted_yelp_business_rating(
             establishment=establishment

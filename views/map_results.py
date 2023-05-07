@@ -4,7 +4,8 @@ import pandas as pd
 import pydeck
 import streamlit as st
 
-from dinesafe.types import Establishment
+from dinesafe.data.db.types import Establishment, Inspection
+
 
 establishment_icon_data_default = {
     "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/default.svg",
@@ -48,20 +49,21 @@ self_icon_data = {
 
 
 def map_results(
-    most_relevant: List[Establishment], center_loc: Optional[Tuple[float, float]] = None
+    most_relevant: List[Tuple[Establishment, Inspection]],
+    center_loc: Optional[Tuple[float, float]] = None,
 ):
     establishment_df = pd.DataFrame(
         data=[
             {
-                "lon": est.longitude,
-                "lat": est.latitude,
-                "name": est.name,
-                "status": est.status,
+                "lon": establishment_inspection[0].longitude,
+                "lat": establishment_inspection[0].latitude,
+                "name": establishment_inspection[0].name,
+                # "status": establishment_inspection[0].status,
                 "icon_data": establishment_icon_data_by_ranking.get(
                     i, establishment_icon_data_default
                 ),
             }
-            for i, est in enumerate(most_relevant)
+            for i, establishment_inspection in enumerate(most_relevant)
         ]
     )
     establishment_layer = pydeck.Layer(
