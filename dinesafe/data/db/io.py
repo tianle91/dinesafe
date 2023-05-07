@@ -1,12 +1,12 @@
-from datetime import date
-from typing import Dict
-from sqlalchemy import Connection, Row
-from dinesafe.data.db.types import Establishment, Inspection
-from typing import List
-from sqlalchemy import text
-import pandas as pd
 import logging
 from dataclasses import asdict
+from datetime import date
+from typing import Dict, List
+
+import pandas as pd
+from sqlalchemy import Connection, Row, text
+
+from dinesafe.data.db.types import Establishment, Inspection
 
 logger = logging.getLogger(__name__)
 

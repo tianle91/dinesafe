@@ -1,6 +1,7 @@
-from dinesafe.data.db.engine import get_inmemory_engine
-from dinesafe.data.db.io import get_establishments, add_new_establishment_if_not_exists
 from sqlalchemy import text
+
+from dinesafe.data.db.engine import get_inmemory_engine
+from dinesafe.data.db.io import add_new_establishment_if_not_exists, get_establishments
 from dinesafe.data.dinesafeto.convert import (
     convert_dinesafeto_establishment,
     convert_dinesafeto_inspection,
