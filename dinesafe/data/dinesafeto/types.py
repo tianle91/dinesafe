@@ -70,3 +70,7 @@ class DinesafeTOEstablishment:
     longitude: float
     status: str
     inspections: Dict[datetime, List[DinesafeTOInspection]]
+
+    @property
+    def external_id(self) -> str:
+        return f"DinesafeTO_{self.id}"

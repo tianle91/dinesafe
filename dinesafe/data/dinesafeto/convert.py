@@ -13,7 +13,7 @@ def convert_dinesafeto_establishment(
         "status": dinesafeto_establishment.status,
     }
     return Establishment(
-        establishment_id=f"DinesafeTO_{dinesafeto_establishment.id}",
+        establishment_id=dinesafeto_establishment.external_id,
         name=dinesafeto_establishment.name,
         address=dinesafeto_establishment.address,
         latitude=dinesafeto_establishment.latitude,
@@ -35,7 +35,7 @@ def convert_dinesafeto_inspection(
             }
             inspection = Inspection(
                 inspection_id=str(hash(str(dinesafeto_inspection))),
-                establishment_id=dinesafeto_establishment.id,
+                establishment_id=dinesafeto_establishment.external_id,
                 is_pass=dinesafeto_inspection.status.lower() == "pass",
                 timestamp=dinesafeto_inspection.date.timestamp(),
                 details_json=json.dumps(extras_dict),
