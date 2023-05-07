@@ -13,8 +13,7 @@ from dinesafe.data.db.engine import get_local_engine
 from dinesafe.data.db.io import (
     create_establishment_table_if_not_exists,
     create_inspection_table_if_not_exists,
-    get_all_establishments,
-    get_all_latest_inspections,
+    get_latest,
 )
 from dinesafe.data.db.types import Establishment, Inspection
 from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
@@ -44,6 +43,7 @@ st.markdown(body=GOOGLE_ANALYTICS_TAG, unsafe_allow_html=True)
 SHOW_TOP_N_RELEVANT = 25
 REFRESH_SECONDS = 43200  # 12 hours
 LAST_REFRESHED_TS_P = "LAST_REFRESHED_TS"
+
 DB_ENGINE = get_local_engine()
 
 with DB_ENGINE.connect() as conn:
@@ -71,18 +71,7 @@ else:
 @st.experimental_singleton()
 def get_cached_all_latest_inspections() -> List[Tuple[Establishment, Inspection]]:
     with DB_ENGINE.connect() as conn:
-        all_establishments = {
-            establishment.establishment_id: establishment
-            for establishment in get_all_establishments(conn=conn)
-        }
-        all_latest_inspections = {
-            inspection.establishment_id: inspection
-            for inspection in get_all_latest_inspections(conn=conn)
-        }
-        return [
-            (all_establishments[k], all_latest_inspections[k])
-            for k in all_latest_inspections
-        ]
+        return get_latest(conn=conn)
 
 
 with st.sidebar:

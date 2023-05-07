@@ -1,6 +1,6 @@
 import logging
 from dataclasses import asdict
-from typing import Dict, List
+from typing import List, Tuple
 
 import pandas as pd
 from sqlalchemy import Connection, CursorResult, Row, text
@@ -83,3 +83,18 @@ def get_all_latest_inspections(conn: Connection):
         sql_query_file="dinesafe/data/db/sql/select_all_latest_inspections.sql",
     )
     return [_parse_inspection_row(row=row) for row in result]
+
+
+def get_latest(conn: Connection) -> List[Tuple[Establishment, Inspection]]:
+    all_establishments = {
+        establishment.establishment_id: establishment
+        for establishment in get_all_establishments(conn=conn)
+    }
+    all_latest_inspections = {
+        inspection.establishment_id: inspection
+        for inspection in get_all_latest_inspections(conn=conn)
+    }
+    return [
+        (all_establishments[k], all_latest_inspections[k])
+        for k in all_latest_inspections
+    ]
