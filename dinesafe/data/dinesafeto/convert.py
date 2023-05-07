@@ -13,7 +13,7 @@ def convert_dinesafeto_establishment(
         "status": dinesafeto_establishment.status,
     }
     return Establishment(
-        establishment_id=dinesafeto_establishment.id,
+        establishment_id=f"DinesafeTO_{dinesafeto_establishment.id}",
         name=dinesafeto_establishment.name,
         address=dinesafeto_establishment.address,
         latitude=dinesafeto_establishment.latitude,
