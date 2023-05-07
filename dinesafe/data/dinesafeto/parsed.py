@@ -98,7 +98,9 @@ def get_establishment(d: dict) -> DinesafeTOEstablishment:
     )
 
 
-def get_parsed_establishments(path_to_xml: str) -> Dict[str, DinesafeTOEstablishment]:
+def get_parsed_dinesafetoestablishments(
+    path_to_xml: str,
+) -> Dict[str, DinesafeTOEstablishment]:
     establishment_l = []
     with open(path_to_xml) as f:
         establishment_l = xmltodict.parse(f.read())["DINESAFE_DATA"]["ESTABLISHMENT"]

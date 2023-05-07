@@ -1,6 +1,6 @@
 import pytest
 
-from dinesafe.data.dinesafeto.parsed import get_parsed_establishments
+from dinesafe.data.dinesafeto.parsed import get_parsed_dinesafetoestablishments
 
 
 @pytest.mark.parametrize(
@@ -11,5 +11,5 @@ from dinesafe.data.dinesafeto.parsed import get_parsed_establishments
     ],
 )
 def test_get_parsed_establishments(path_to_xml: str, num_establishments: int):
-    d = get_parsed_establishments(path_to_xml=path_to_xml)
+    d = get_parsed_dinesafetoestablishments(path_to_xml=path_to_xml)
     assert len(d) == num_establishments, len(d)

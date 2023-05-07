@@ -18,7 +18,7 @@ from dinesafe.data.dinesafeto.types import DinesafeTOEstablishment
 
 
 def test_add_new_establishment_if_not_exists(
-    old_parsed_establishments: Dict[str, DinesafeTOEstablishment]
+    old_parsed_dinesafetoestablishments: Dict[str, DinesafeTOEstablishment]
 ):
     engine = get_inmemory_engine()
     with engine.connect() as conn:
@@ -27,7 +27,7 @@ def test_add_new_establishment_if_not_exists(
         db_establishments = get_establishments(conn=conn)
         assert len(db_establishments) == 0, db_establishments
 
-        for dinesafeto_establishment in old_parsed_establishments.values():
+        for dinesafeto_establishment in old_parsed_dinesafetoestablishments.values():
             establishment = convert_dinesafeto_establishment(
                 dinesafeto_establishment=dinesafeto_establishment
             )
@@ -38,14 +38,14 @@ def test_add_new_establishment_if_not_exists(
 
 
 def test_add_new_inspection_if_not_exists(
-    old_parsed_establishments: Dict[str, DinesafeTOEstablishment]
+    old_parsed_dinesafetoestablishments: Dict[str, DinesafeTOEstablishment]
 ):
     engine = get_inmemory_engine()
     with engine.connect() as conn:
         with open("dinesafe/data/db/sql/create_inspection.sql") as f:
             conn.execute(text(f.read()))
 
-        for dinesafeto_establishment in old_parsed_establishments.values():
+        for dinesafeto_establishment in old_parsed_dinesafetoestablishments.values():
             establishment = convert_dinesafeto_establishment(
                 dinesafeto_establishment=dinesafeto_establishment
             )
@@ -65,14 +65,14 @@ def test_add_new_inspection_if_not_exists(
 
 
 def test_get_new_inspections(
-    old_parsed_establishments: Dict[str, DinesafeTOEstablishment]
+    old_parsed_dinesafetoestablishments: Dict[str, DinesafeTOEstablishment]
 ):
     engine = get_inmemory_engine()
     with engine.connect() as conn:
         with open("dinesafe/data/db/sql/create_inspection.sql") as f:
             conn.execute(text(f.read()))
 
-        for dinesafeto_establishment in old_parsed_establishments.values():
+        for dinesafeto_establishment in old_parsed_dinesafetoestablishments.values():
             establishment = convert_dinesafeto_establishment(
                 dinesafeto_establishment=dinesafeto_establishment
             )

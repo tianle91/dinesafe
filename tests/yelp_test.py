@@ -1,14 +1,13 @@
 from dinesafe.data.dinesafeto.convert import convert_dinesafeto_establishment
-from dinesafe.data.dinesafeto.parsed import get_parsed_establishments
 from dinesafe.yelp import get_yelp_biz_search_top_result
+from typing import Dict
+from dinesafe.data.dinesafeto.types import DinesafeTOEstablishment
 
 
-def test_get_yelp_biz_search_result():
-    dinesafeto_establishments = get_parsed_establishments(
-        path_to_xml="tests/test_data/dinesafe/old.xml"
-    )
-
-    for dinesafeto_establishment in dinesafeto_establishments.values():
+def test_get_yelp_biz_search_result(
+    old_parsed_dinesafetoestablishments: Dict[str, DinesafeTOEstablishment]
+):
+    for dinesafeto_establishment in old_parsed_dinesafetoestablishments.values():
         establishment = convert_dinesafeto_establishment(
             dinesafeto_establishment=dinesafeto_establishment
         )
