@@ -14,4 +14,4 @@ def get_inmemory_engine(**kwargs) -> Engine:
 
 
 def get_local_engine(**kwargs) -> Engine:
-    return create_engine("sqlite:///database.db", **kwargs)
+    return create_engine("sqlite:///database.sqlite", **kwargs)
