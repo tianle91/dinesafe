@@ -29,10 +29,10 @@ def convert_dinesafeto_inspection(
     for dinesafeto_inspections in dinesafeto_establishment.inspections.values():
         for dinesafeto_inspection in dinesafeto_inspections:
             extras_dict = {
-                "inspections": [asdict(inspection) for inspection in inspections]
+                "inspections": [str(inspection) for inspection in inspections]
             }
             inspection = Inspection(
-                inspection_id=str(hash(asdict(dinesafeto_inspection))),
+                inspection_id=str(hash(str(dinesafeto_inspection))),
                 establishment_id=dinesafeto_establishment.id,
                 is_pass=dinesafeto_inspection.status.lower() == "pass",
                 date=dinesafeto_inspection.date,
