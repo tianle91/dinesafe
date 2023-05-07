@@ -11,3 +11,7 @@ def get_mysql_engine(
 
 def get_inmemory_engine(**kwargs) -> Engine:
     return create_engine("sqlite+pysqlite:///:memory:", **kwargs)
+
+
+def get_local_engine(**kwargs) -> Engine:
+    return create_engine("sqlite:///database.db", **kwargs)

@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 URL = "https://secure.toronto.ca/opendata/ds/od_xml/v2?format=xml&stream=n"
 
 
-def download(download_directory="data/dinesafe") -> Optional[str]:
+def download_dinesafeto(download_directory="data/dinesafe") -> Optional[str]:
     now_ts = time.time()
     download_fname = f"{now_ts}.xml"
     download_path = os.path.join(download_directory, download_fname)
