@@ -19,6 +19,9 @@ def parse_inspection_row(row: Row) -> Inspection:
     return Inspection(**row._asdict())
 
 
+# TODO: too slow, need to batch some sql queries
+
+
 def add_new_establishment_if_not_exists(conn: Connection, establishment: Establishment):
     with open("dinesafe/data/db/sql/select_establishments.sql") as f:
         result = conn.execute(
