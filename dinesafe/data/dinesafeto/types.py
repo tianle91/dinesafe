@@ -33,4 +33,3 @@ class DinesafeTOEstablishment:
     longitude: float
     status: str
     inspections: Dict[date, List[DinesafeTOInspection]]
-    yelp_biz_result: Optional[dict] = None

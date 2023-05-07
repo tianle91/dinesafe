@@ -13,5 +13,4 @@ clean:
 
 .PHONY: test
 test: .git/hooks/pre-commit
-	rm -rf data
 	tox run
