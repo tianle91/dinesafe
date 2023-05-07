@@ -1,7 +1,6 @@
 import pytest
-from dinesafe.data.dinesafeto.parsed import (
-    get_parsed_establishments,
-)
+
+from dinesafe.data.dinesafeto.parsed import get_parsed_establishments
 
 
 @pytest.mark.parametrize(

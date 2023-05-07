@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Optional
 
@@ -5,7 +6,6 @@ import requests
 import requests_cache
 
 from dinesafe.data.db.types import Establishment
-import logging
 
 logger = logging.getLogger(__name__)
 

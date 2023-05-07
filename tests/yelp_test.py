@@ -1,8 +1,6 @@
-from dinesafe.data.dinesafeto.parsed import (
-    get_parsed_establishments,
-)
-from dinesafe.yelp import get_yelp_biz_search_top_result
 from dinesafe.data.dinesafeto.convert import convert_dinesafeto_establishment
+from dinesafe.data.dinesafeto.parsed import get_parsed_establishments
+from dinesafe.yelp import get_yelp_biz_search_top_result
 
 
 def test_get_yelp_biz_search_result():

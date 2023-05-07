@@ -1,6 +1,7 @@
-from dinesafe.data.db.types import Establishment, Inspection
-from typing import Dict
 from datetime import date
+from typing import Dict
+
+from dinesafe.data.db.types import Establishment, Inspection
 
 
 def add_new_establishment_if_not_exists(establishment: Establishment):

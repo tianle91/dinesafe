@@ -1,5 +1,4 @@
-from sqlalchemy import create_engine
-from sqlalchemy import Engine
+from sqlalchemy import Engine, create_engine
 
 
 def get_mysql_engine(

@@ -2140,4 +2140,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">3.9.7,<4.0" # should match Dockerfile
-content-hash = "cbae2188b9a8c6ddb420bb0579879077130f559e307aa2cb81779fb9e254ac5a"
+content-hash = "c0cbdf968c0358376c54a0255c21b642b0bb2f226c63495cf061897e6ee1804e"

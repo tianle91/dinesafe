@@ -1,20 +1,18 @@
-import xmltodict
-
-from datetime import date, datetime
-from typing import List, Dict
-from dinesafe.constants import YMD_FORMAT
-from dinesafe.data.dinesafeto.types import (
-    DinesafeTOInfraction,
-    DinesafeTOEstablishment,
-    DinesafeTOInspection,
-)
-import logging
 import logging
 import os
 import time
-from typing import Optional
+from datetime import datetime
+from typing import Dict, Optional
 
 import wget
+import xmltodict
+
+from dinesafe.constants import YMD_FORMAT
+from dinesafe.data.dinesafeto.types import (
+    DinesafeTOEstablishment,
+    DinesafeTOInfraction,
+    DinesafeTOInspection,
+)
 
 logger = logging.getLogger(__name__)
 

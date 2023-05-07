@@ -1,8 +1,9 @@
-from dinesafe.data.dinesafeto.types import DinesafeTOEstablishment
-from dinesafe.data.db.types import Establishment, Inspection
-from dataclasses import asdict
 import json
+from dataclasses import asdict
 from typing import List
+
+from dinesafe.data.db.types import Establishment, Inspection
+from dinesafe.data.dinesafeto.types import DinesafeTOEstablishment
 
 
 def convert_dinesafeto_establishment(
