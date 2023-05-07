@@ -1,5 +1,4 @@
 import json
-from dataclasses import asdict
 from typing import List
 
 from dinesafe.data.db.types import Establishment, Inspection
