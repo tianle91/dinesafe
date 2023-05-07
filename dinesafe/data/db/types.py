@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from datetime import date
 from typing import Optional
 
 
@@ -8,7 +7,7 @@ class Inspection:
     inspection_id: str
     establishment_id: str
     is_pass: bool
-    date: date
+    timestamp: float
     details_json: Optional[str] = None
 
 

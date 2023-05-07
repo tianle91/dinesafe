@@ -69,5 +69,14 @@ def get_inspections(conn: Connection, establishment: Establishment):
     return [parse_inspection_row(row=row) for row in result]
 
 
-def get_new_inspections_since(conn: Connection, dt: date) -> List[Inspection]:
-    pass
+def get_new_inspections(
+    conn: Connection, establishment: Establishment, last_inspection_timestamp: float
+) -> List[Inspection]:
+    with open("dinesafe/data/db/sql/select_new_inspections.sql") as f:
+        query = f.read().format(
+            establishment_id=establishment.establishment_id,
+            last_inspection_timestamp=last_inspection_timestamp,
+        )
+    print(query)
+    result = conn.execute(text(query))
+    return [parse_inspection_row(row=row) for row in result]

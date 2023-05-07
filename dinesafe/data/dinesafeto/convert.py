@@ -37,7 +37,7 @@ def convert_dinesafeto_inspection(
                 inspection_id=str(hash(str(dinesafeto_inspection))),
                 establishment_id=dinesafeto_establishment.id,
                 is_pass=dinesafeto_inspection.status.lower() == "pass",
-                date=dinesafeto_inspection.date,
+                timestamp=dinesafeto_inspection.date.timestamp(),
                 details_json=json.dumps(extras_dict),
             )
             inspections.append(inspection)

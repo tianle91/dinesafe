@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from datetime import date
+from datetime import datetime
 from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class DinesafeTOInfraction:
     severity: str
     deficiency: str
     action: str
-    conviction_date: Optional[date] = None
+    conviction_date: Optional[datetime] = None
     court_outcome: Optional[str] = None
     amount_fined: Optional[float] = None
 
@@ -47,7 +47,7 @@ infractions:
 @dataclass
 class DinesafeTOInspection:
     status: str
-    date: date
+    date: datetime
     infractions: List[DinesafeTOInfraction]
 
     def __str__(self) -> str:
@@ -69,4 +69,4 @@ class DinesafeTOEstablishment:
     latitude: float
     longitude: float
     status: str
-    inspections: Dict[date, List[DinesafeTOInspection]]
+    inspections: Dict[datetime, List[DinesafeTOInspection]]
