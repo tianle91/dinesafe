@@ -19,7 +19,7 @@ from views.search_results import search_results
 
 logger = logging.getLogger(__name__)
 
-API_URL = "http://localhost:8000"
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 API_KEY = os.getenv("API_KEY")
 
 HEADERS = {"Content-Type": "application/json", "Authorization": f"Bearer {API_KEY}"}

@@ -3,6 +3,7 @@
 .PHONY: clean
 clean:
 	rm -rf .tox .cache .venv requirements.txt .git/hooks/pre-commit
+	rm -rf LAST_REFRESHED_TS data/dinesafe/*.xml *.sqlite
 
 .venv:
 	poetry config virtualenvs.in-project true
@@ -14,7 +15,3 @@ clean:
 .PHONY: test
 test: .git/hooks/pre-commit
 	tox run
-
-.PHONY: clean_cache
-clean_cache:
-	rm -rf LAST_REFRESHED_TS data/dinesafe/*.xml *.sqlite
