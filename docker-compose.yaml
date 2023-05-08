@@ -3,7 +3,7 @@ services:
   ui:
     container_name: ui
     build: .
-    ports: 
+    ports:
       - "8501:8501"
     restart: unless-stopped
     entrypoint: "sh start_ui.sh"
