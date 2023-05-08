@@ -1,7 +1,3 @@
-from typing import Dict
-
-from sqlalchemy import text
-
 from dinesafe.data.db.engine import get_inmemory_engine
 from dinesafe.data.db.io import (
     add_new_establishment,
@@ -9,15 +5,9 @@ from dinesafe.data.db.io import (
     create_establishment_table_if_not_exists,
     create_inspection_table_if_not_exists,
     get_all_establishments,
-    get_all_latest_inspections,
     get_inspections,
-    get_new_inspections,
 )
 from dinesafe.data.db.types import Establishment, Inspection
-from dinesafe.data.dinesafeto.convert import (
-    convert_dinesafeto_establishment,
-    convert_dinesafeto_inspection,
-)
 
 ESTABLISHMENT_ID = "0"
 

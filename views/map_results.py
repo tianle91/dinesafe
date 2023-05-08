@@ -57,7 +57,7 @@ def map_results(
                 "lon": establishment_inspection[0].longitude,
                 "lat": establishment_inspection[0].latitude,
                 "name": establishment_inspection[0].name,
-                # "status": establishment_inspection[0].status,
+                "status": "Pass" if establishment_inspection[1].is_pass else "Fail",
                 "icon_data": establishment_icon_data_by_ranking.get(
                     i, establishment_icon_data_default
                 ),
