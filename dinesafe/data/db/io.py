@@ -44,6 +44,15 @@ def get_all_establishments(conn: Connection) -> List[Establishment]:
     return [_parse_establishment_row(row=row) for row in result]
 
 
+def get_total_num_inspections(conn: Connection) -> int:
+    results = list(
+        conn.execute(text("SELECT COUNT(*) AS num_inspections FROM inspection"))
+    )
+    if len(results) != 1:
+        raise ValueError()
+    return results[0].num_inspections
+
+
 def get_inspections(conn: Connection, establishment: Establishment):
     result = _execute_sql_from_file(
         conn=conn,
