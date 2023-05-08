@@ -27,15 +27,18 @@ MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", None)
 if API_KEY is None:
     raise ValueError('No API_KEY specified!')
 
+def create_database_if_not_exists(mysql_conn, database_name: str):
+    mycur = mysql_conn.cursor()
+    mycur.execute(f'CREATE DATABASE IF NOT EXISTS {database_name}')
+    mysql_conn.close()
+
 if all([i is not None for i in (MYSQL_URL, MYSQL_USER, MYSQL_PASSWORD)]):
     myconn = mysql.connector.connect(
         user=MYSQL_USER,
         password=MYSQL_PASSWORD,
         host=MYSQL_URL,
     )
-    mycur = myconn.cursor()
-    mycur.execute('CREATE DATABASE IF NOT EXISTS dinesafe')
-    myconn.close()
+    create_database_if_not_exists(mysql_conn=myconn, database_name='dinesafe')
     DB_ENGINE = get_mysql_engine(
         user=MYSQL_USER,
         password=MYSQL_PASSWORD,
