@@ -4,12 +4,12 @@ import time
 from typing import List, Tuple
 
 import numpy as np
+import requests
 import streamlit as st
 from humanfriendly import format_number, format_timespan
 from sklearn.feature_extraction.text import TfidfVectorizer
 from streamlit_js_eval import get_geolocation
 
-import requests
 from dinesafe.data.db.types import Establishment, Inspection
 from dinesafe.distances import normalize
 from dinesafe.distances.geo import get_haversine_distances, parse_geolocation
@@ -20,6 +20,9 @@ from views.search_results import search_results
 logger = logging.getLogger(__name__)
 
 API_URL = "http://localhost:8000"
+API_KEY = os.getenv("API_KEY")
+
+HEADERS = {"Content-Type": "application/json", "Authorization": f"Bearer {API_KEY}"}
 
 
 GOOGLE_ANALYTICS_TAG = """
@@ -60,7 +63,9 @@ else:
 
 @st.experimental_singleton()
 def get_cached_all_latest_inspections() -> List[Tuple[Establishment, Inspection]]:
-    latest_result = requests.get(url=os.path.join(API_URL, "latest")).json()
+    latest_result = requests.get(
+        url=os.path.join(API_URL, "latest"), headers=HEADERS
+    ).json()
     return [
         (Establishment(**estab_d), Inspection(**inspect_d))
         for estab_d, inspect_d in latest_result
@@ -77,7 +82,8 @@ with st.sidebar:
     if user_requested_refresh or should_refresh:
         with st.spinner("Refreshing data..."):
             refresh_results = requests.get(
-                url=os.path.join(API_URL, "refresh/dinesafeto")
+                url=os.path.join(API_URL, "refresh/dinesafeto"),
+                headers=HEADERS,
             ).json()
             new_establishment_counts = refresh_results["new_establishment_counts"]
             new_inspection_counts = refresh_results["new_inspection_counts"]

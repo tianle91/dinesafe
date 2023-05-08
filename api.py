@@ -1,22 +1,36 @@
-from fastapi import FastAPI, HTTPException
+import os
+
+from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+
 from dinesafe.data.db.engine import get_local_engine
 from dinesafe.data.db.io import (
     create_establishment_table_if_not_exists,
     create_inspection_table_if_not_exists,
-    get_latest,
     get_all_establishments,
+    get_latest,
     get_total_num_inspections,
 )
 from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
 
-
 app = FastAPI()
 
+API_KEY = os.getenv("API_KEY")
 DB_ENGINE = get_local_engine()
 
 with DB_ENGINE.connect() as conn:
     create_establishment_table_if_not_exists(conn=conn)
     create_inspection_table_if_not_exists(conn=conn)
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  # use token authentication
+
+
+def api_key_auth(api_key: str = Depends(oauth2_scheme)):
+    if api_key != API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Forbidden"
+        )
 
 
 @app.get("/")
@@ -27,13 +41,13 @@ def read_root():
     return f"dinesafe api with {len(establishments)} establishments and {num_inspections} inspections."
 
 
-@app.get("/latest")
+@app.get("/latest", dependencies=[Depends(api_key_auth)])
 def read_latest():
     with DB_ENGINE.connect() as conn:
         return get_latest(conn=conn)
 
 
-@app.get("/refresh/{source_name}")
+@app.get("/refresh/{source_name}", dependencies=[Depends(api_key_auth)])
 def refresh_source(source_name: str = "dinesafeto"):
     refresh_fn = lambda x: (0, 0)
     if source_name == "dinesafeto":
