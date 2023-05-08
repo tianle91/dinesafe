@@ -3,5 +3,8 @@
 Check out [dinesafe.tchen.xyz](http://dinesafe.tchen.xyz)
 
 ## Deploy
-For the ui, update `.streamlit/secrets.toml` and run `streamlit run app.py`.
-For the api, update `docker-compose.yaml` and run `docker-compose up`.
+Fill out the following secrets
+- `.streamlit/secrets.toml`
+- `docker-compose.yaml`
+
+Then run `docker-compose up`.
