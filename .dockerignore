@@ -1,0 +1,7 @@
+.tox
+.cache
+.venv
+.git
+LAST_REFRESHED_TS
+data/dinesafe/*.xml
+*.sqlite
