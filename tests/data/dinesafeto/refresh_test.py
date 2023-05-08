@@ -1,4 +1,5 @@
-from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
+import pandas as pd
+
 from dinesafe.data.db.engine import get_inmemory_engine
 from dinesafe.data.db.io import (
     create_establishment_table_if_not_exists,
@@ -6,7 +7,7 @@ from dinesafe.data.db.io import (
     get_all_establishments,
     get_total_num_inspections,
 )
-import pandas as pd
+from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
 
 
 def test_refresh_dinesafeto_and_update_db():
