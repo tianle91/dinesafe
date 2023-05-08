@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from sqlalchemy import Connection
 
@@ -22,9 +22,15 @@ from dinesafe.data.dinesafeto.parsed import (
 logger = logging.getLogger(__name__)
 
 
-def refresh_dinesafeto_and_update_db(conn: Connection):
-    p = download_dinesafeto()
-    dinesafetoestablishments = get_parsed_dinesafetoestablishments(path_to_xml=p)
+def refresh_dinesafeto_and_update_db(
+    conn: Connection, path_to_xml: Optional[str] = None
+):
+    if path_to_xml is None:
+        path_to_xml = download_dinesafeto()
+
+    dinesafetoestablishments = get_parsed_dinesafetoestablishments(
+        path_to_xml=path_to_xml
+    )
 
     existing_establishment_ids = [
         establishment.establishment_id
@@ -44,7 +50,7 @@ def refresh_dinesafeto_and_update_db(conn: Connection):
         inspections = convert_dinesafeto_inspection(
             dinesafeto_establishment=dinesafetoestablishment
         )
-        if dinesafetoestablishment.id not in existing_establishment_ids:
+        if establishment.establishment_id not in existing_establishment_ids:
             logger.info(
                 f"Adding new establishment: {establishment.name} id: {establishment.establishment_id}"
             )
@@ -62,9 +68,10 @@ def refresh_dinesafeto_and_update_db(conn: Connection):
                     establishment.establishment_id
                 ].timestamp
             ]
+
         # inspections may have duplicates
         new_inspections_by_id: Dict[str, List[Inspection]] = {}
-        for inspection in inspections:
+        for inspection in new_inspections:
             new_inspections_by_id[inspection.inspection_id] = new_inspections_by_id.get(
                 inspection.inspection_id, []
             ) + [inspection]
