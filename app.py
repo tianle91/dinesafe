@@ -9,14 +9,8 @@ from humanfriendly import format_number, format_timespan
 from sklearn.feature_extraction.text import TfidfVectorizer
 from streamlit_js_eval import get_geolocation
 
-from dinesafe.data.db.engine import get_local_engine
-from dinesafe.data.db.io import (
-    create_establishment_table_if_not_exists,
-    create_inspection_table_if_not_exists,
-    get_latest,
-)
+import requests
 from dinesafe.data.db.types import Establishment, Inspection
-from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
 from dinesafe.distances import normalize
 from dinesafe.distances.geo import get_haversine_distances, parse_geolocation
 from dinesafe.distances.name import get_name_distances
@@ -24,6 +18,8 @@ from views.map_results import map_results
 from views.search_results import search_results
 
 logger = logging.getLogger(__name__)
+
+API_URL = "http://localhost:8000"
 
 
 GOOGLE_ANALYTICS_TAG = """
@@ -43,12 +39,6 @@ st.markdown(body=GOOGLE_ANALYTICS_TAG, unsafe_allow_html=True)
 SHOW_TOP_N_RELEVANT = 25
 REFRESH_SECONDS = 43200  # 12 hours
 LAST_REFRESHED_TS_P = "LAST_REFRESHED_TS"
-
-DB_ENGINE = get_local_engine()
-
-with DB_ENGINE.connect() as conn:
-    create_establishment_table_if_not_exists(conn=conn)
-    create_inspection_table_if_not_exists(conn=conn)
 
 st.title("DinesafeTO")
 
@@ -70,8 +60,11 @@ else:
 
 @st.experimental_singleton()
 def get_cached_all_latest_inspections() -> List[Tuple[Establishment, Inspection]]:
-    with DB_ENGINE.connect() as conn:
-        return get_latest(conn=conn)
+    latest_result = requests.get(url=os.path.join(API_URL, "latest")).json()
+    return [
+        (Establishment(**estab_d), Inspection(**inspect_d))
+        for estab_d, inspect_d in latest_result
+    ]
 
 
 with st.sidebar:
@@ -83,11 +76,11 @@ with st.sidebar:
         logger.info("Refreshing due to user request.")
     if user_requested_refresh or should_refresh:
         with st.spinner("Refreshing data..."):
-            with DB_ENGINE.connect() as conn:
-                (
-                    new_establishment_counts,
-                    new_inspection_counts,
-                ) = refresh_dinesafeto_and_update_db(conn=conn)
+            refresh_results = requests.get(
+                url=os.path.join(API_URL, "refresh/dinesafeto")
+            ).json()
+            new_establishment_counts = refresh_results["new_establishment_counts"]
+            new_inspection_counts = refresh_results["new_inspection_counts"]
 
             st.info(
                 f"Added {format_number(new_establishment_counts)} new establishments "
