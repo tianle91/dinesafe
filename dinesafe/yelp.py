@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 requests_cache.install_cache(
     name="yelp_api_cache",
     backend="sqlite",
-    urls_expire_after={"*": 86400},  # 1 day
+    urls_expire_after={"api.yelp.com": 86400},  # 1 day
 )
 
 YELP_API_KEY = os.getenv("YELP_API_KEY", None)
