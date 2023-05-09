@@ -1,9 +1,12 @@
+import logging
 import os
 
+import mysql.connector
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from mysql.connector import MySQLConnection
 
-from dinesafe.data.db.engine import get_local_engine
+from dinesafe.data.db.engine import get_local_engine, get_mysql_engine
 from dinesafe.data.db.io import (
     create_establishment_table_if_not_exists,
     create_inspection_table_if_not_exists,
@@ -13,10 +16,40 @@ from dinesafe.data.db.io import (
 )
 from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
 
-app = FastAPI()
+logger = logging.getLogger(__name__)
+app = FastAPI(debug=True)
 
-API_KEY = os.getenv("API_KEY")
-DB_ENGINE = get_local_engine()
+API_KEY = os.getenv("API_KEY", None)
+MYSQL_URL = os.getenv("MYSQL_URL", None)
+MYSQL_USER = os.getenv("MYSQL_USER", None)
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", None)
+
+if API_KEY is None:
+    raise ValueError("No API_KEY specified!")
+
+
+def create_database_if_not_exists(mysql_conn: MySQLConnection, database_name: str):
+    mycur = mysql_conn.cursor()
+    mycur.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
+    mysql_conn.close()
+
+
+if all([i is not None for i in (MYSQL_URL, MYSQL_USER, MYSQL_PASSWORD)]):
+    myconn = mysql.connector.connect(
+        user=MYSQL_USER,
+        password=MYSQL_PASSWORD,
+        host=MYSQL_URL,
+    )
+    create_database_if_not_exists(mysql_conn=myconn, database_name="dinesafe")
+    DB_ENGINE = get_mysql_engine(
+        user=MYSQL_USER,
+        password=MYSQL_PASSWORD,
+        database="dinesafe",
+        url=MYSQL_URL,
+    )
+else:
+    logging.warning("Using sqlite")
+    DB_ENGINE = get_local_engine()
 
 with DB_ENGINE.connect() as conn:
     create_establishment_table_if_not_exists(conn=conn)
