@@ -31,7 +31,7 @@ def refresh_dinesafeto_and_update_db(
         path_to_xml = download_dinesafeto()
 
     # path_to_xml looks like {now_ts}.xml
-    downloaded_ts = int(Path(path_to_xml).stem)
+    downloaded_ts = float(Path(path_to_xml).stem)
     dinesafetoestablishments = get_parsed_dinesafetoestablishments(
         path_to_xml=path_to_xml,
         updated_timestamp=downloaded_ts,
