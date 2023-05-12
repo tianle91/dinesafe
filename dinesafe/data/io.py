@@ -5,7 +5,7 @@ from typing import List, Tuple
 import pandas as pd
 from sqlalchemy import Connection, CursorResult, Row, text
 
-from dinesafe.data.db.types import Establishment, Inspection
+from dinesafe.data.types import Establishment, Inspection
 
 logger = logging.getLogger(__name__)
 
@@ -29,13 +29,13 @@ def _execute_sql_from_file(
 
 def create_establishment_table_if_not_exists(conn: Connection):
     _execute_sql_from_file(
-        conn=conn, sql_query_file="dinesafe/data/db/sql/create_establishment.sql"
+        conn=conn, sql_query_file="dinesafe/data/sql/create_establishment.sql"
     )
 
 
 def create_inspection_table_if_not_exists(conn: Connection):
     _execute_sql_from_file(
-        conn=conn, sql_query_file="dinesafe/data/db/sql/create_inspection.sql"
+        conn=conn, sql_query_file="dinesafe/data/sql/create_inspection.sql"
     )
 
 
@@ -56,7 +56,7 @@ def get_total_num_inspections(conn: Connection) -> int:
 def get_inspections(conn: Connection, establishment: Establishment):
     result = _execute_sql_from_file(
         conn=conn,
-        sql_query_file="dinesafe/data/db/sql/select_inspections.sql",
+        sql_query_file="dinesafe/data/sql/select_inspections.sql",
         establishment_id=establishment.establishment_id,
     )
     return [_parse_inspection_row(row=row) for row in result]
@@ -79,7 +79,7 @@ def get_new_inspections(
 ) -> List[Inspection]:
     result = _execute_sql_from_file(
         conn=conn,
-        sql_query_file="dinesafe/data/db/sql/select_new_inspections.sql",
+        sql_query_file="dinesafe/data/sql/select_new_inspections.sql",
         establishment_id=establishment.establishment_id,
         last_inspection_timestamp=last_inspection_timestamp,
     )
@@ -89,7 +89,7 @@ def get_new_inspections(
 def get_all_latest_inspections(conn: Connection):
     result = _execute_sql_from_file(
         conn=conn,
-        sql_query_file="dinesafe/data/db/sql/select_all_latest_inspections.sql",
+        sql_query_file="dinesafe/data/sql/select_all_latest_inspections.sql",
     )
     return [_parse_inspection_row(row=row) for row in result]
 

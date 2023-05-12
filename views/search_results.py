@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 import streamlit as st
 
-from dinesafe.data.db.types import Establishment, Inspection
+from dinesafe.data.types import Establishment, Inspection
 from views.yelp_ratings import get_formatted_yelp_business_rating
 
 summary_md_str = """

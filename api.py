@@ -6,8 +6,8 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from mysql.connector import MySQLConnection
 
-from dinesafe.data.db.engine import get_local_engine, get_mysql_engine
-from dinesafe.data.db.io import (
+from dinesafe.data.engine import get_local_engine, get_mysql_engine
+from dinesafe.data.io import (
     create_establishment_table_if_not_exists,
     create_inspection_table_if_not_exists,
     get_all_establishments,

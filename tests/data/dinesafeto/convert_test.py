@@ -4,7 +4,6 @@ from dinesafe.data.dinesafeto.convert import (
     convert_dinesafeto_establishment,
     convert_dinesafeto_inspection,
 )
-from dinesafe.data.dinesafeto.parsed import get_parsed_dinesafetoestablishments
 from dinesafe.data.dinesafeto.types import Establishment
 
 

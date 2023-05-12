@@ -3,13 +3,13 @@ from typing import Dict, List, Optional
 
 from sqlalchemy import Connection
 
-from dinesafe.data.db.io import (
+from dinesafe.data.io import (
     add_new_establishment,
     add_new_inspections,
     get_all_establishments,
     get_all_latest_inspections,
 )
-from dinesafe.data.db.types import Inspection
+from dinesafe.data.types import Inspection
 from dinesafe.data.dinesafeto.convert import (
     convert_dinesafeto_establishment,
     convert_dinesafeto_inspection,

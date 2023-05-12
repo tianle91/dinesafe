@@ -1,4 +1,4 @@
-from dinesafe.data.db.types import Establishment
+from dinesafe.data.types import Establishment
 from dinesafe.yelp import get_yelp_biz_search_top_result
 
 rating_to_stars_url_mapping = {

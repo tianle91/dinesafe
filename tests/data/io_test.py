@@ -1,5 +1,5 @@
-from dinesafe.data.db.engine import get_inmemory_engine
-from dinesafe.data.db.io import (
+from dinesafe.data.engine import get_inmemory_engine
+from dinesafe.data.io import (
     add_new_establishment,
     add_new_inspections,
     create_establishment_table_if_not_exists,
@@ -7,7 +7,7 @@ from dinesafe.data.db.io import (
     get_all_establishments,
     get_inspections,
 )
-from dinesafe.data.db.types import Establishment, Inspection
+from dinesafe.data.types import Establishment, Inspection
 
 ESTABLISHMENT_ID = "0"
 

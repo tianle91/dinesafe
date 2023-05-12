@@ -5,7 +5,7 @@ from typing import Optional
 import requests
 import requests_cache
 
-from dinesafe.data.db.types import Establishment
+from dinesafe.data.types import Establishment
 
 logger = logging.getLogger(__name__)
 

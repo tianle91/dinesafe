@@ -1,7 +1,7 @@
 import json
 from typing import List
 
-from dinesafe.data.db.types import Establishment, Inspection
+from dinesafe.data.types import Establishment, Inspection
 from dinesafe.data.dinesafeto.types import Establishment as DSTOEstablishment
 
 

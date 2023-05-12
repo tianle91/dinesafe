@@ -10,7 +10,7 @@ from humanfriendly import format_number, format_timespan
 from sklearn.feature_extraction.text import TfidfVectorizer
 from streamlit_js_eval import get_geolocation
 
-from dinesafe.data.db.types import Establishment, Inspection
+from dinesafe.data.types import Establishment, Inspection
 from dinesafe.distances import normalize
 from dinesafe.distances.geo import get_haversine_distances, parse_geolocation
 from dinesafe.distances.name import get_name_distances
