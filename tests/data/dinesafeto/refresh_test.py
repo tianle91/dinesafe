@@ -1,5 +1,3 @@
-import pandas as pd
-
 from dinesafe.data.db.engine import get_inmemory_engine
 from dinesafe.data.db.io import (
     create_establishment_table_if_not_exists,
@@ -18,14 +16,14 @@ def test_refresh_dinesafeto_and_update_db():
 
     with engine.connect() as conn:
         refresh_dinesafeto_and_update_db(
-            conn=conn, path_to_xml="tests/test_data/dinesafe/old.xml"
+            conn=conn, path_to_xml="tests/test_data/dinesafe/1000.xml"
         )
         num_establishments = len(get_all_establishments(conn=conn))
         num_inspections = get_total_num_inspections(conn=conn)
         assert (num_establishments, num_inspections) == (2, 6)
 
         refresh_dinesafeto_and_update_db(
-            conn=conn, path_to_xml="tests/test_data/dinesafe/new.xml"
+            conn=conn, path_to_xml="tests/test_data/dinesafe/1001.xml"
         )
         num_establishments = len(get_all_establishments(conn=conn))
         num_inspections = get_total_num_inspections(conn=conn)

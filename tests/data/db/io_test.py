@@ -17,6 +17,7 @@ ESTABLISHMENT = Establishment(
     address="address_1",
     latitude=0.0,
     longitude=0.0,
+    updated_timestamp=0.0,
 )
 
 INSPECTION = Inspection(
@@ -24,6 +25,7 @@ INSPECTION = Inspection(
     establishment_id=ESTABLISHMENT_ID,
     is_pass=True,
     timestamp=0,
+    updated_timestamp=0.0,
 )
 
 

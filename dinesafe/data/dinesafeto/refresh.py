@@ -18,6 +18,8 @@ from dinesafe.data.dinesafeto.parsed import (
     download_dinesafeto,
     get_parsed_dinesafetoestablishments,
 )
+from pathlib import Path
+
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +30,11 @@ def refresh_dinesafeto_and_update_db(
     if path_to_xml is None:
         path_to_xml = download_dinesafeto()
 
+    # path_to_xml looks like {now_ts}.xml
+    downloaded_ts = int(Path(path_to_xml).stem)
     dinesafetoestablishments = get_parsed_dinesafetoestablishments(
-        path_to_xml=path_to_xml
+        path_to_xml=path_to_xml,
+        updated_timestamp=downloaded_ts,
     )
 
     existing_establishment_ids = [
@@ -45,11 +50,9 @@ def refresh_dinesafeto_and_update_db(
     new_inspection_counts = 0
     for dinesafetoestablishment in dinesafetoestablishments.values():
         establishment = convert_dinesafeto_establishment(
-            dinesafeto_establishment=dinesafetoestablishment
+            dsto_estab=dinesafetoestablishment
         )
-        inspections = convert_dinesafeto_inspection(
-            dinesafeto_establishment=dinesafetoestablishment
-        )
+        inspections = convert_dinesafeto_inspection(dsto_estab=dinesafetoestablishment)
         if establishment.establishment_id not in existing_establishment_ids:
             logger.info(
                 f"Adding new establishment: {establishment.name} id: {establishment.establishment_id}"

@@ -7,5 +7,6 @@ from dinesafe.data.dinesafeto.parsed import get_parsed_dinesafetoestablishments
 @pytest.fixture(scope="session", autouse=True)
 def old_parsed_dinesafetoestablishments():
     return get_parsed_dinesafetoestablishments(
-        path_to_xml="tests/test_data/dinesafe/old.xml"
+        path_to_xml="tests/test_data/dinesafe/1000.xml",
+        updated_timestamp=0.0,
     )

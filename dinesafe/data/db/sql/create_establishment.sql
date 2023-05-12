@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS establishment (
     address TEXT NOT NULL,
     latitude NUMERIC NOT NULL,
     longitude NUMERIC NOT NULL,
+    updated_timestamp NUMERIC NOT NULL,
     details_json TEXT,
     PRIMARY KEY (establishment_id)
 )
