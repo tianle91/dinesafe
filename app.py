@@ -65,7 +65,7 @@ else:
 def get_cached_all_latest_inspections() -> List[Tuple[Establishment, Inspection]]:
     latest_response = requests.get(url=os.path.join(API_URL, "latest"), headers=HEADERS)
     try:
-        latest_result = latest_result.json()
+        latest_result = latest_response.json()
     except Exception as e:
         print(latest_response)
         raise e
