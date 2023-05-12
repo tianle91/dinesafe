@@ -17,7 +17,7 @@ amount_fined: {amount_fined}
 
 
 @dataclass
-class DinesafeTOInfraction:
+class Infraction:
     severity: str
     deficiency: str
     action: str
@@ -45,10 +45,10 @@ infractions:
 
 
 @dataclass
-class DinesafeTOInspection:
+class Inspection:
     status: str
     date: datetime
-    infractions: List[DinesafeTOInfraction]
+    infractions: List[Infraction]
 
     def __str__(self) -> str:
         return INSPECTION_STR.format(
@@ -61,7 +61,7 @@ class DinesafeTOInspection:
 
 
 @dataclass
-class DinesafeTOEstablishment:
+class Establishment:
     id: str
     name: str
     type: str
@@ -69,7 +69,8 @@ class DinesafeTOEstablishment:
     latitude: float
     longitude: float
     status: str
-    inspections: Dict[datetime, List[DinesafeTOInspection]]
+    updated_timestamp: float
+    inspections: Dict[datetime, List[Inspection]]
 
     @property
     def external_id(self) -> str:

@@ -63,9 +63,12 @@ else:
 
 @st.experimental_singleton()
 def get_cached_all_latest_inspections() -> List[Tuple[Establishment, Inspection]]:
-    latest_result = requests.get(
-        url=os.path.join(API_URL, "latest"), headers=HEADERS
-    ).json()
+    latest_response = requests.get(url=os.path.join(API_URL, "latest"), headers=HEADERS)
+    try:
+        latest_result = latest_response.json()
+    except Exception as e:
+        print(latest_response)
+        raise e
     return [
         (Establishment(**estab_d), Inspection(**inspect_d))
         for estab_d, inspect_d in latest_result
@@ -81,12 +84,17 @@ with st.sidebar:
         logger.info("Refreshing due to user request.")
     if user_requested_refresh or should_refresh:
         with st.spinner("Refreshing data..."):
-            refresh_results = requests.get(
+            refresh_response = requests.get(
                 url=os.path.join(API_URL, "refresh/dinesafeto"),
                 headers=HEADERS,
-            ).json()
-            new_establishment_counts = refresh_results["new_establishment_counts"]
-            new_inspection_counts = refresh_results["new_inspection_counts"]
+            )
+            try:
+                refresh_results = refresh_response.json()
+                new_establishment_counts = refresh_results["new_establishment_counts"]
+                new_inspection_counts = refresh_results["new_inspection_counts"]
+            except Exception as e:
+                print(refresh_response)
+                raise e
 
             st.info(
                 f"Added {format_number(new_establishment_counts)} new establishments "

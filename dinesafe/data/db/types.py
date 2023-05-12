@@ -8,6 +8,7 @@ class Inspection:
     establishment_id: str
     is_pass: bool
     timestamp: float
+    updated_timestamp: float
     details_json: Optional[str] = None
 
 
@@ -18,4 +19,5 @@ class Establishment:
     address: str
     latitude: float
     longitude: float
+    updated_timestamp: float
     details_json: Optional[str] = None
