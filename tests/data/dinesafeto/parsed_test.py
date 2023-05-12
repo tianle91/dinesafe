@@ -6,8 +6,8 @@ from dinesafe.data.dinesafeto.parsed import get_parsed_dinesafetoestablishments
 @pytest.mark.parametrize(
     ("path_to_xml", "updated_timestamp", "num_establishments"),
     [
-        pytest.param("tests/test_data/dinesafe/1001.xml", 1001, 3, id="new"),
-        pytest.param("tests/test_data/dinesafe/1000.xml", 1000, 2, id="old"),
+        pytest.param("tests/test_data/dinesafe/1001.11.xml", 1001.11, 3, id="new"),
+        pytest.param("tests/test_data/dinesafe/1000.01.xml", 1000.01, 2, id="old"),
     ],
 )
 def test_get_parsed_establishments(
