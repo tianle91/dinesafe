@@ -16,14 +16,14 @@ def test_refresh_dinesafeto_and_update_db():
 
     with engine.connect() as conn:
         refresh_dinesafeto_and_update_db(
-            conn=conn, path_to_xml="tests/test_data/dinesafe/1000.xml"
+            conn=conn, path_to_xml="tests/test_data/dinesafe/1000.01.xml"
         )
         num_establishments = len(get_all_establishments(conn=conn))
         num_inspections = get_total_num_inspections(conn=conn)
         assert (num_establishments, num_inspections) == (2, 6)
 
         refresh_dinesafeto_and_update_db(
-            conn=conn, path_to_xml="tests/test_data/dinesafe/1001.xml"
+            conn=conn, path_to_xml="tests/test_data/dinesafe/1001.11.xml"
         )
         num_establishments = len(get_all_establishments(conn=conn))
         num_inspections = get_total_num_inspections(conn=conn)
