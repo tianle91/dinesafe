@@ -8,10 +8,8 @@ clean:
 .venv:
 	poetry config virtualenvs.in-project true
 	poetry install
-
-.git/hooks/pre-commit: .venv
 	.venv/bin/python -m pre_commit install
 
 .PHONY: test
-test: .git/hooks/pre-commit
+test:
 	tox run
