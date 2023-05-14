@@ -8,7 +8,7 @@ from views.yelp_ratings import get_formatted_yelp_business_rating
 
 summary_md_str = """
 #### {rank}. **{name}**
-*Address: {address} ({lat:.2f}, {lon:.2f})*
+*Address: {address} ({lat:.4f}, {lon:.4f})*
 
 <p style="color:{status_color}">
     {status}
