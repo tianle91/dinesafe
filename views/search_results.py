@@ -8,7 +8,7 @@ from views.yelp_ratings import get_formatted_yelp_business_rating
 
 summary_md_str = """
 #### {rank}. **{name}**
-*Address: {address}*
+*Address: {address} ({lat:.2f}, {lon:.2f})*
 
 <p style="color:{status_color}">
     {status}
@@ -32,6 +32,8 @@ def search_results(most_relevant: List[Tuple[Establishment, Inspection]]):
             rank=i + 1,
             name=establishment.name,
             address=establishment.address,
+            lat=establishment.latitude,
+            lon=establishment.longitude,
             status_color=status_color,
             status="Pass" if latest_inspection.is_pass else "Fail",
             last_inspection_dt_str=last_inspection_dt_str,

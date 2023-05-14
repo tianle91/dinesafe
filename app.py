@@ -69,10 +69,20 @@ def get_cached_all_latest_inspections() -> List[Tuple[Establishment, Inspection]
     except Exception as e:
         print(latest_response)
         raise e
-    return [
-        (Establishment(**estab_d), Inspection(**inspect_d))
-        for estab_d, inspect_d in latest_result
-    ]
+    latest_establishments_inspections = []
+    for estab_d, inspect_d in latest_result:
+        try:
+            establishment = Establishment(**estab_d)
+        except Exception as e:
+            logger.fatal(f"Failed to parse into Establishment: {estab_d}")
+            raise e
+        try:
+            inspection = Inspection(**inspect_d)
+        except Exception as e:
+            logger.fatal(f"Failed to parse into Inspection: {inspect_d}")
+            raise e
+        latest_establishments_inspections.append((establishment, inspection))
+    return latest_establishments_inspections
 
 
 with st.sidebar:
@@ -93,7 +103,7 @@ with st.sidebar:
                 new_establishment_counts = refresh_results["new_establishment_counts"]
                 new_inspection_counts = refresh_results["new_inspection_counts"]
             except Exception as e:
-                print(refresh_response)
+                logger.fatal("fFailed to parse json from response: {refresh_response}")
                 raise e
 
             st.info(
