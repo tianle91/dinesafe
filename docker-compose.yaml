@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   ui:
-    container_name: ui
+    container_name: dinesafe-ui
     build: .
     ports:
       - "8501:8501"
@@ -10,7 +10,7 @@ services:
     depends_on:
       - api
   api:
-    container_name: api
+    container_name: dinesafe-api
     build: .
     ports:
       - "8000:8000"
@@ -23,7 +23,7 @@ services:
     depends_on:
       - mysql
   mysql:
-    container_name: mysql
+    container_name: dinesafe-mysql
     image: mysql
     environment:
       - "MYSQL_ROOT_PASSWORD=mysql_root_password"
