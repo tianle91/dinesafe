@@ -16,6 +16,17 @@ from dinesafe.distances.geo import get_haversine_distances, parse_geolocation
 from dinesafe.distances.name import get_name_distances
 from views.map_results import map_results
 from views.search_results import search_results
+import requests_cache
+
+requests_cache.install_cache(
+    name="yelp_api_cache",
+    backend="sqlite",
+    urls_expire_after={
+        "*": 0,
+        # 1 day
+        "api.yelp.com": 86400,
+    },
+)
 
 logger = logging.getLogger(__name__)
 
