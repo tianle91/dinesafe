@@ -114,7 +114,7 @@ with st.sidebar:
                 new_establishment_counts = refresh_results["new_establishment_counts"]
                 new_inspection_counts = refresh_results["new_inspection_counts"]
             except Exception as e:
-                logger.fatal("fFailed to parse json from response: {refresh_response}")
+                logger.fatal(f"Failed to parse json from response: {refresh_response}")
                 raise e
 
             st.info(
