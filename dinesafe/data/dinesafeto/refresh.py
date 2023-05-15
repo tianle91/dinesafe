@@ -74,5 +74,7 @@ def refresh_dinesafeto_and_update_db(
             add_new_inspections(conn=conn, inspections=new_inspections)
             new_inspection_counts += len(new_inspections)
 
-    conn.commit()
+        # commit after potentially max of 2 executions
+        conn.commit()
+
     return (new_establishment_counts, new_inspection_counts)
