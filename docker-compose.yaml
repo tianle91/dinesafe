@@ -14,17 +14,14 @@ services:
     build: .
     ports:
       - "8000:8000"
-    environment:
-      - "API_KEY=???"
-      - "MYSQL_URL=mysql"
-      - "MYSQL_USER=root"
-      - "MYSQL_PASSWORD=mysql_root_password"
+    env_file:
+      - .env
     restart: unless-stopped
     depends_on:
       - mysql
   mysql:
     container_name: dinesafe-mysql
     image: mysql
-    environment:
-      - "MYSQL_ROOT_PASSWORD=mysql_root_password"
+    env_file:
+      - .env
     restart: unless-stopped
