@@ -1,3 +1,4 @@
+from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
 from dinesafe.data.engine import get_inmemory_engine
 from dinesafe.data.io import (
     create_establishment_table_if_not_exists,
@@ -5,7 +6,6 @@ from dinesafe.data.io import (
     get_all_establishments,
     get_total_num_inspections,
 )
-from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
 
 
 def test_refresh_dinesafeto_and_update_db():
@@ -27,4 +27,4 @@ def test_refresh_dinesafeto_and_update_db():
         )
         num_establishments = len(get_all_establishments(conn=conn))
         num_inspections = get_total_num_inspections(conn=conn)
-        assert (num_establishments, num_inspections) == (3, 7)
+        assert (num_establishments, num_inspections) == (3, 8)

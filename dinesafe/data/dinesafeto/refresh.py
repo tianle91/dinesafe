@@ -1,15 +1,9 @@
 import logging
+from pathlib import Path
 from typing import Dict, List, Optional
 
 from sqlalchemy import Connection
 
-from dinesafe.data.io import (
-    add_new_establishment,
-    add_new_inspections,
-    get_all_establishments,
-    get_all_latest_inspections,
-)
-from dinesafe.data.types import Inspection
 from dinesafe.data.dinesafeto.convert import (
     convert_dinesafeto_establishment,
     convert_dinesafeto_inspection,
@@ -18,8 +12,12 @@ from dinesafe.data.dinesafeto.parsed import (
     download_dinesafeto,
     get_parsed_dinesafetoestablishments,
 )
-from pathlib import Path
-
+from dinesafe.data.io import (
+    add_new_establishment,
+    add_new_inspections,
+    get_all_establishments,
+    get_inspections,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -41,18 +39,13 @@ def refresh_dinesafeto_and_update_db(
         establishment.establishment_id
         for establishment in get_all_establishments(conn=conn)
     ]
-    latest_inspections_by_establishment = {
-        inspection.establishment_id: inspection
-        for inspection in get_all_latest_inspections(conn=conn)
-    }
-
     new_establishment_counts = 0
     new_inspection_counts = 0
     for dinesafetoestablishment in dinesafetoestablishments.values():
+        # add new establishment if needed
         establishment = convert_dinesafeto_establishment(
             dsto_estab=dinesafetoestablishment
         )
-        inspections = convert_dinesafeto_inspection(dsto_estab=dinesafetoestablishment)
         if establishment.establishment_id not in existing_establishment_ids:
             logger.info(
                 f"Adding new establishment: {establishment.name} id: {establishment.establishment_id}"
@@ -60,27 +53,17 @@ def refresh_dinesafeto_and_update_db(
             add_new_establishment(conn=conn, establishment=establishment)
             new_establishment_counts += 1
 
-        if establishment.establishment_id not in latest_inspections_by_establishment:
-            new_inspections = inspections
-        else:
-            new_inspections = [
-                inspection
-                for inspection in inspections
-                if inspection.timestamp
-                > latest_inspections_by_establishment[
-                    establishment.establishment_id
-                ].timestamp
-            ]
-
-        # inspections may have duplicates
-        new_inspections_by_id: Dict[str, List[Inspection]] = {}
-        for inspection in new_inspections:
-            new_inspections_by_id[inspection.inspection_id] = new_inspections_by_id.get(
-                inspection.inspection_id, []
-            ) + [inspection]
-        # let's just pick the first one since the id is a content hash
-        new_inspections = [new_inspections_by_id[k][0] for k in new_inspections_by_id]
-
+        # add new inspections if needed
+        inspections = convert_dinesafeto_inspection(dsto_estab=dinesafetoestablishment)
+        existing_inspection_keys = set(
+            inspection.inspection_id
+            for inspection in get_inspections(conn=conn, establishment=establishment)
+        )
+        new_inspections = {
+            inspection
+            for inspection in inspections
+            if inspection.inspection_id not in existing_inspection_keys
+        }
         if len(new_inspections) > 0:
             logger.info(
                 f"Adding {len(new_inspections)} new inspections for establishment id {establishment.establishment_id}: "

@@ -11,6 +11,9 @@ class Inspection:
     updated_timestamp: float
     details_json: Optional[str] = None
 
+    def __hash__(self) -> int:
+        return hash(self.inspection_id)
+
 
 @dataclass
 class Establishment:
