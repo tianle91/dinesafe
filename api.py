@@ -6,6 +6,7 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from mysql.connector import MySQLConnection
 
+from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
 from dinesafe.data.engine import get_local_engine, get_mysql_engine
 from dinesafe.data.io import (
     create_establishment_table_if_not_exists,
@@ -14,7 +15,6 @@ from dinesafe.data.io import (
     get_latest,
     get_total_num_inspections,
 )
-from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
 
 logger = logging.getLogger(__name__)
 app = FastAPI(debug=True)

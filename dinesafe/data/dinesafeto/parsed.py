@@ -8,11 +8,7 @@ import wget
 import xmltodict
 
 from dinesafe.constants import YMD_FORMAT
-from dinesafe.data.dinesafeto.types import (
-    Establishment,
-    Infraction,
-    Inspection,
-)
+from dinesafe.data.dinesafeto.types import Establishment, Infraction, Inspection
 
 logger = logging.getLogger(__name__)
 

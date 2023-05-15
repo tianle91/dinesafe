@@ -5,6 +5,7 @@ from typing import List, Tuple
 
 import numpy as np
 import requests
+import requests_cache
 import streamlit as st
 from humanfriendly import format_number, format_timespan
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -16,7 +17,6 @@ from dinesafe.distances.geo import get_haversine_distances, parse_geolocation
 from dinesafe.distances.name import get_name_distances
 from views.map_results import map_results
 from views.search_results import search_results
-import requests_cache
 
 requests_cache.install_cache(
     name="yelp_api_cache",

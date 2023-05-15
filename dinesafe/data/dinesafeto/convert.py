@@ -1,8 +1,8 @@
 import json
 from typing import List
 
-from dinesafe.data.types import Establishment, Inspection
 from dinesafe.data.dinesafeto.types import Establishment as DSTOEstablishment
+from dinesafe.data.types import Establishment, Inspection
 
 
 def convert_dinesafeto_establishment(dsto_estab: DSTOEstablishment) -> Establishment:
