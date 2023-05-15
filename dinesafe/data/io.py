@@ -62,16 +62,34 @@ def get_inspections(conn: Connection, establishment: Establishment):
     return [_parse_inspection_row(row=row) for row in result]
 
 
-def add_new_establishment(conn: Connection, establishment: Establishment):
-    pd.DataFrame(data=[asdict(establishment)]).to_sql(
-        name="establishment", con=conn, if_exists="append", index=False
-    )
+def add_new_establishment(
+    conn: Connection, establishment: Establishment, raise_error: bool = True
+):
+    df = pd.DataFrame(data=[asdict(establishment)])
+    try:
+        df.to_sql(name="establishment", con=conn, if_exists="append", index=False)
+    except Exception as e:
+        logger.warning(
+            f"Failed to add establishment (id: {establishment.establishment_id}): {establishment.name}"
+        )
+        logger.warning(df)
+        logger.warning(e)
+        if raise_error:
+            raise e
 
 
-def add_new_inspections(conn: Connection, inspections: List[Inspection]):
-    pd.DataFrame(data=[asdict(inspection) for inspection in inspections]).to_sql(
-        name="inspection", con=conn, if_exists="append", index=False
-    )
+def add_new_inspections(
+    conn: Connection, inspections: List[Inspection], raise_error: bool = True
+):
+    df = pd.DataFrame(data=[asdict(inspection) for inspection in inspections])
+    try:
+        df.to_sql(name="inspection", con=conn, if_exists="append", index=False)
+    except Exception as e:
+        logger.warning(f"Failed to add {len(df)} inspections")
+        logger.warning(df)
+        logger.warning(e)
+        if raise_error:
+            raise e
 
 
 def get_new_inspections(

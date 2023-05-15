@@ -50,7 +50,9 @@ def refresh_dinesafeto_and_update_db(
             logger.info(
                 f"Adding new establishment: {establishment.name} id: {establishment.establishment_id}"
             )
-            add_new_establishment(conn=conn, establishment=establishment)
+            add_new_establishment(
+                conn=conn, establishment=establishment, raise_error=False
+            )
             new_establishment_counts += 1
 
         # add new inspections if needed
@@ -71,7 +73,9 @@ def refresh_dinesafeto_and_update_db(
                     sorted([inspection.inspection_id for inspection in new_inspections])
                 )
             )
-            add_new_inspections(conn=conn, inspections=new_inspections)
+            add_new_inspections(
+                conn=conn, inspections=new_inspections, raise_error=False
+            )
             new_inspection_counts += len(new_inspections)
 
         # commit after potentially max of 2 executions
