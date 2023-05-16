@@ -4,6 +4,7 @@ from dinesafe.data.io import (
     add_new_establishment,
     add_new_inspections,
     get_all_establishments,
+    get_establishment,
     get_inspections,
 )
 from dinesafe.data.types import Establishment, Inspection
@@ -26,6 +27,19 @@ INSPECTION = Inspection(
     timestamp=0,
     updated_timestamp=0.0,
 )
+
+
+def test_get_establishment(connection: Connection):
+    establishment = get_establishment(
+        conn=connection, establishment_id=ESTABLISHMENT.establishment_id
+    )
+    assert establishment is None, establishment
+    # insert one and get one
+    add_new_establishment(conn=connection, establishment=ESTABLISHMENT)
+    establishment = get_establishment(
+        conn=connection, establishment_id=ESTABLISHMENT.establishment_id
+    )
+    assert isinstance(establishment, Establishment), establishment
 
 
 def test_get_all_establishments(connection: Connection):

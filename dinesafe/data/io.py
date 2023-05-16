@@ -1,6 +1,6 @@
 import logging
 from dataclasses import asdict
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import pandas as pd
 from sqlalchemy import Connection, CursorResult, Row, text
@@ -37,6 +37,23 @@ def create_inspection_table_if_not_exists(conn: Connection):
     _execute_sql_from_file(
         conn=conn, sql_query_file="dinesafe/data/sql/create_inspection.sql"
     )
+
+
+def get_establishment(
+    conn: Connection, establishment_id: str
+) -> Optional[Establishment]:
+    result = _execute_sql_from_file(
+        conn=conn,
+        sql_query_file="dinesafe/data/sql/select_establishments.sql",
+        establishment_id=establishment_id,
+    )
+    establishments = [_parse_establishment_row(row=row) for row in result]
+    if len(establishments) > 1:
+        raise KeyError(f"Duplicates found for establishment_id: {establishment_id}")
+    elif len(establishments) == 0:
+        return None
+    else:
+        return establishments[0]
 
 
 def get_all_establishments(conn: Connection) -> List[Establishment]:

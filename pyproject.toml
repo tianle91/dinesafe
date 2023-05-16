@@ -20,6 +20,7 @@ mysql-connector-python = "^8.0.33"
 sqlalchemy = "^2.0.12"
 fastapi = "^0.95.1"
 uvicorn = {extras = ["standard"], version = "^0.22.0"}
+apscheduler = "^3.10.1"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "*"

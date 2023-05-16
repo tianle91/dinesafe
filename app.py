@@ -109,18 +109,10 @@ with st.sidebar:
                 url=os.path.join(API_URL, "refresh/dinesafeto"),
                 headers=HEADERS,
             )
-            try:
-                refresh_results = refresh_response.json()
-                new_establishment_counts = refresh_results["new_establishment_counts"]
-                new_inspection_counts = refresh_results["new_inspection_counts"]
-            except Exception as e:
-                logger.fatal(f"Failed to parse json from response: {refresh_response}")
-                raise e
-
-            st.info(
-                f"Added {format_number(new_establishment_counts)} new establishments "
-                + f"and {format_number(new_inspection_counts)} new inspections."
-            )
+            if refresh_response.status_code == 200:
+                st.success("Successfully requested refresh!")
+            else:
+                st.warning("Failed to request refresh.")
             LAST_REFRESHED_TS = time.time()
             with open(LAST_REFRESHED_TS_P, mode="w") as f:
                 f.write(str(LAST_REFRESHED_TS))
@@ -200,22 +192,27 @@ RELEVANT_INSPECTIONS = list(map(lambda t: t[0], RELEVANT_INSPECTIONS))
 
 # get the top relevant
 num_close_names = len(RELEVANT_INSPECTIONS)
-will_be_truncated = num_close_names > SHOW_TOP_N_RELEVANT
-RELEVANT_INSPECTIONS = RELEVANT_INSPECTIONS[:SHOW_TOP_N_RELEVANT]
-if will_be_truncated:
-    warning_message = f"Showing top {SHOW_TOP_N_RELEVANT} out of {num_close_names}. "
-    if geolocation is None:
-        warning_message += 'For more relevant results, consider clicking "Near Me".'
-    st.warning(warning_message)
+if num_close_names == 0:
+    st.warning("No relevant establishments found.")
+else:
+    will_be_truncated = num_close_names > SHOW_TOP_N_RELEVANT
+    RELEVANT_INSPECTIONS = RELEVANT_INSPECTIONS[:SHOW_TOP_N_RELEVANT]
+    if will_be_truncated:
+        warning_message = (
+            f"Showing top {SHOW_TOP_N_RELEVANT} out of {num_close_names}. "
+        )
+        if geolocation is None:
+            warning_message += 'For more relevant results, consider clicking "Near Me".'
+        st.warning(warning_message)
 
-st.markdown("----")
-map_results(
-    most_relevant=RELEVANT_INSPECTIONS,
-    center_loc=(
-        [geolocation.coords.latitude, geolocation.coords.longitude]
-        if geolocation is not None
-        else None
-    ),
-)
-st.markdown("----")
-search_results(most_relevant=RELEVANT_INSPECTIONS)
+    st.markdown("----")
+    map_results(
+        most_relevant=RELEVANT_INSPECTIONS,
+        center_loc=(
+            [geolocation.coords.latitude, geolocation.coords.longitude]
+            if geolocation is not None
+            else None
+        ),
+    )
+    st.markdown("----")
+    search_results(most_relevant=RELEVANT_INSPECTIONS)

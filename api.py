@@ -2,6 +2,7 @@ import logging
 import os
 
 import mysql.connector
+from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from mysql.connector import MySQLConnection
@@ -15,6 +16,9 @@ from dinesafe.data.io import (
     get_latest,
     get_total_num_inspections,
 )
+
+scheduler = BackgroundScheduler()
+scheduler.start()
 
 logger = logging.getLogger(__name__)
 app = FastAPI(debug=True)
@@ -80,21 +84,21 @@ def read_latest():
         return get_latest(conn=conn)
 
 
+def _refresh_dinesafeto_and_update_db():
+    with DB_ENGINE.connect() as conn:
+        return refresh_dinesafeto_and_update_db(conn=conn)
+
+
 @app.get("/refresh/{source_name}", dependencies=[Depends(api_key_auth)])
 def refresh_source(source_name: str = "dinesafeto"):
-    refresh_fn = lambda x: (0, 0)
     if source_name == "dinesafeto":
-        refresh_fn = refresh_dinesafeto_and_update_db
+        scheduler.add_job(
+            func=_refresh_dinesafeto_and_update_db,
+            replace_existing=False,
+            max_instances=1,
+            id="_refresh_dinesafeto_and_update_db",
+        )
     else:
         raise HTTPException(
             status_code=404, detail=f"source_name: {source_name} not found"
         )
-    with DB_ENGINE.connect() as conn:
-        (
-            new_establishment_counts,
-            new_inspection_counts,
-        ) = refresh_fn(conn=conn)
-        return {
-            "new_establishment_counts": new_establishment_counts,
-            "new_inspection_counts": new_inspection_counts,
-        }
