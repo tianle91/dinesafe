@@ -1,12 +1,8 @@
 from sqlalchemy import Connection
 
-from dinesafe.data.io import (
-    add_new_establishment,
-    add_new_inspections,
-    get_establishment,
-    get_all_establishments,
-    get_inspections,
-)
+from dinesafe.data.io import (add_new_establishment, add_new_inspections,
+                              get_all_establishments, get_establishment,
+                              get_inspections)
 from dinesafe.data.types import Establishment, Inspection
 
 ESTABLISHMENT_ID = "0"

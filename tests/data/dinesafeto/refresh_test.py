@@ -1,11 +1,9 @@
 from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
 from dinesafe.data.engine import get_inmemory_engine
-from dinesafe.data.io import (
-    create_establishment_table_if_not_exists,
-    create_inspection_table_if_not_exists,
-    get_all_establishments,
-    get_total_num_inspections,
-)
+from dinesafe.data.io import (create_establishment_table_if_not_exists,
+                              create_inspection_table_if_not_exists,
+                              get_all_establishments,
+                              get_total_num_inspections)
 
 
 def test_refresh_dinesafeto_and_update_db():

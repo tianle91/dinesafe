@@ -1,6 +1,6 @@
 import logging
 from dataclasses import asdict
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 import pandas as pd
 from sqlalchemy import Connection, CursorResult, Row, text
