@@ -6,8 +6,10 @@ from sqlalchemy import Connection
 from dinesafe.data.dinesafeto.parsed import get_parsed_dinesafetoestablishments
 from dinesafe.data.dinesafeto.types import Establishment as DSTOEstablishment
 from dinesafe.data.engine import get_inmemory_engine
-from dinesafe.data.io import (create_establishment_table_if_not_exists,
-                              create_inspection_table_if_not_exists)
+from dinesafe.data.io import (
+    create_establishment_table_if_not_exists,
+    create_inspection_table_if_not_exists,
+)
 
 
 @pytest.fixture(scope="session", autouse=True)

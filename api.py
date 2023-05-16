@@ -9,10 +9,13 @@ from mysql.connector import MySQLConnection
 
 from dinesafe.data.dinesafeto.refresh import refresh_dinesafeto_and_update_db
 from dinesafe.data.engine import get_local_engine, get_mysql_engine
-from dinesafe.data.io import (create_establishment_table_if_not_exists,
-                              create_inspection_table_if_not_exists,
-                              get_all_establishments, get_latest,
-                              get_total_num_inspections)
+from dinesafe.data.io import (
+    create_establishment_table_if_not_exists,
+    create_inspection_table_if_not_exists,
+    get_all_establishments,
+    get_latest,
+    get_total_num_inspections,
+)
 
 scheduler = BackgroundScheduler()
 scheduler.start()
@@ -85,6 +88,7 @@ def _refresh_dinesafeto_and_update_db():
     with DB_ENGINE.connect() as conn:
         return refresh_dinesafeto_and_update_db(conn=conn)
 
+
 @app.get("/refresh/{source_name}", dependencies=[Depends(api_key_auth)])
 def refresh_source(source_name: str = "dinesafeto"):
     if source_name == "dinesafeto":
@@ -92,7 +96,7 @@ def refresh_source(source_name: str = "dinesafeto"):
             func=_refresh_dinesafeto_and_update_db,
             replace_existing=False,
             max_instances=1,
-            id='_refresh_dinesafeto_and_update_db'
+            id="_refresh_dinesafeto_and_update_db",
         )
     else:
         raise HTTPException(

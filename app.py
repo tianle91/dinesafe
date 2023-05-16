@@ -110,9 +110,9 @@ with st.sidebar:
                 headers=HEADERS,
             )
             if refresh_response.status_code == 200:
-                st.success('Successfully requested refresh!')
+                st.success("Successfully requested refresh!")
             else:
-                st.warning('Failed to request refresh.')
+                st.warning("Failed to request refresh.")
             LAST_REFRESHED_TS = time.time()
             with open(LAST_REFRESHED_TS_P, mode="w") as f:
                 f.write(str(LAST_REFRESHED_TS))
@@ -193,12 +193,14 @@ RELEVANT_INSPECTIONS = list(map(lambda t: t[0], RELEVANT_INSPECTIONS))
 # get the top relevant
 num_close_names = len(RELEVANT_INSPECTIONS)
 if num_close_names == 0:
-    st.warning('No relevant establishments found.')
+    st.warning("No relevant establishments found.")
 else:
     will_be_truncated = num_close_names > SHOW_TOP_N_RELEVANT
     RELEVANT_INSPECTIONS = RELEVANT_INSPECTIONS[:SHOW_TOP_N_RELEVANT]
     if will_be_truncated:
-        warning_message = f"Showing top {SHOW_TOP_N_RELEVANT} out of {num_close_names}. "
+        warning_message = (
+            f"Showing top {SHOW_TOP_N_RELEVANT} out of {num_close_names}. "
+        )
         if geolocation is None:
             warning_message += 'For more relevant results, consider clicking "Near Me".'
         st.warning(warning_message)

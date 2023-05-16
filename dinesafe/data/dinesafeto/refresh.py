@@ -4,14 +4,22 @@ from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy import Connection
 
-from dinesafe.data.dinesafeto.convert import (convert_dinesafeto_establishment,
-                                              convert_dinesafeto_inspection)
+from dinesafe.data.dinesafeto.convert import (
+    convert_dinesafeto_establishment,
+    convert_dinesafeto_inspection,
+)
 from dinesafe.data.dinesafeto.parsed import (
-    download_dinesafeto, get_parsed_dinesafetoestablishments)
+    download_dinesafeto,
+    get_parsed_dinesafetoestablishments,
+)
 from dinesafe.data.dinesafeto.types import Establishment as DSTOEstablishment
-from dinesafe.data.io import (add_new_establishment, add_new_inspections,
-                              get_all_establishments, get_establishment,
-                              get_inspections)
+from dinesafe.data.io import (
+    add_new_establishment,
+    add_new_inspections,
+    get_all_establishments,
+    get_establishment,
+    get_inspections,
+)
 from dinesafe.data.types import Establishment, Inspection
 
 logger = logging.getLogger(__name__)
