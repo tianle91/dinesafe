@@ -5,7 +5,8 @@ Check out [dinesafe.tchen.xyz](http://dinesafe.tchen.xyz)
 ## Deploy
 Fill out the following secrets
 - `.streamlit/secrets.toml`
-- `docker-compose.yaml`
+- `api.env` (you need a decent api key since the api is public)
+- `mysql.env` (optional - mysql is local only)
 
 Then run `docker-compose up`.
 
