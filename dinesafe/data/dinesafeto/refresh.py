@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from sqlalchemy import Connection
 
@@ -16,7 +16,6 @@ from dinesafe.data.dinesafeto.types import Establishment as DSTOEstablishment
 from dinesafe.data.io import (
     add_new_establishment,
     add_new_inspections,
-    get_all_establishments,
     get_establishment,
     get_inspections,
 )
