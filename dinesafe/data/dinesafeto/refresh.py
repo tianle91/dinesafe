@@ -17,6 +17,7 @@ from dinesafe.data.io import (
     add_new_inspections,
     get_all_establishments,
     get_inspections,
+    get_establishment,
 )
 
 logger = logging.getLogger(__name__)
@@ -35,10 +36,6 @@ def refresh_dinesafeto_and_update_db(
         updated_timestamp=downloaded_ts,
     )
 
-    existing_establishment_ids = [
-        establishment.establishment_id
-        for establishment in get_all_establishments(conn=conn)
-    ]
     new_establishment_counts = 0
     new_inspection_counts = 0
     for dinesafetoestablishment in dinesafetoestablishments.values():
@@ -46,7 +43,12 @@ def refresh_dinesafeto_and_update_db(
         establishment = convert_dinesafeto_establishment(
             dsto_estab=dinesafetoestablishment
         )
-        if establishment.establishment_id not in existing_establishment_ids:
+        if (
+            get_establishment(
+                conn=conn, establishment_id=establishment.establishment_id
+            )
+            is None
+        ):
             logger.info(
                 f"Adding new establishment: {establishment.name} id: {establishment.establishment_id}"
             )
