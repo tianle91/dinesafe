@@ -7,26 +7,8 @@ from dinesafe.data.io import (
     get_establishment,
     get_inspections,
 )
-from dinesafe.data.types import Establishment, Inspection
-
-ESTABLISHMENT_ID = "0"
-
-ESTABLISHMENT = Establishment(
-    establishment_id=ESTABLISHMENT_ID,
-    name="establishment_0",
-    address="address_1",
-    latitude=0.0,
-    longitude=0.0,
-    updated_timestamp=0.0,
-)
-
-INSPECTION = Inspection(
-    inspection_id="1",
-    establishment_id=ESTABLISHMENT_ID,
-    is_pass=True,
-    timestamp=0,
-    updated_timestamp=0.0,
-)
+from dinesafe.data.types import Establishment
+from tests.constants import ESTABLISHMENT, INSPECTION
 
 
 def test_get_establishment(connection: Connection):

@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Optional
 
 import mysql.connector
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -13,9 +14,13 @@ from dinesafe.data.io import (
     create_establishment_table_if_not_exists,
     create_inspection_table_if_not_exists,
     get_all_establishments,
+    get_establishment,
+    get_inspections,
     get_latest,
     get_total_num_inspections,
 )
+from dinesafe.distances.geo import Coords
+from dinesafe.search import get_relevant_establishment_ids
 
 scheduler = BackgroundScheduler()
 scheduler.start()
@@ -82,6 +87,36 @@ def read_root():
 def read_latest():
     with DB_ENGINE.connect() as conn:
         return get_latest(conn=conn)
+
+
+@app.get("/search", dependencies=[Depends(api_key_auth)])
+def read_search(
+    search_term: Optional[str] = None,
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
+    accuracy: Optional[float] = None,
+    limit: Optional[int] = 25,
+    limit_inspections: Optional[int] = 5,
+):
+    coords = None
+    if all([v is not None for v in (accuracy, latitude, longitude)]):
+        coords = Coords(accuracy=accuracy, latitude=latitude, longitude=longitude)
+    with DB_ENGINE.connect() as conn:
+        relevant_establishment_ids = get_relevant_establishment_ids(
+            conn=conn,
+            coords=coords,
+            search_term=search_term,
+        )[:limit]
+        # get sorted inspections
+        result = []
+        for establishment_id in relevant_establishment_ids:
+            establishment = get_establishment(
+                conn=conn, establishment_id=establishment_id
+            )
+            inspections = get_inspections(conn=conn, establishment=establishment)
+            inspections = sorted(inspections, key=lambda v: v.timestamp, reverse=True)
+            result.append((establishment, inspections[:limit_inspections]))
+        return result
 
 
 def _refresh_dinesafeto_and_update_db():

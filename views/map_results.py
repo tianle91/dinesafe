@@ -48,23 +48,26 @@ self_icon_data = {
 
 
 def map_results(
-    most_relevant: List[Tuple[Establishment, Inspection]],
+    most_relevant: List[Tuple[Establishment, List[Inspection]]],
     center_loc: Optional[Tuple[float, float]] = None,
 ):
-    establishment_df = pd.DataFrame(
-        data=[
+    data = []
+    for i, v in enumerate(most_relevant):
+        establishment, inspections = v
+        data.append(
             {
-                "lon": establishment_inspection[0].longitude,
-                "lat": establishment_inspection[0].latitude,
-                "name": establishment_inspection[0].name,
-                "status": "Pass" if establishment_inspection[1].is_pass else "Fail",
+                "lon": establishment.longitude,
+                "lat": establishment.latitude,
+                "name": establishment.name,
+                "status": ("Pass" if inspections[0].is_pass else "Fail")
+                if len(inspections) > 0
+                else "No inspections",
                 "icon_data": establishment_icon_data_by_ranking.get(
                     i, establishment_icon_data_default
                 ),
             }
-            for i, establishment_inspection in enumerate(most_relevant)
-        ]
-    )
+        )
+    establishment_df = pd.DataFrame(data=data)
     establishment_layer = pydeck.Layer(
         "IconLayer",
         data=establishment_df,

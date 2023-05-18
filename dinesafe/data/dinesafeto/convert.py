@@ -1,3 +1,4 @@
+import hashlib
 import json
 from typing import List
 
@@ -21,6 +22,12 @@ def convert_dinesafeto_establishment(dsto_estab: DSTOEstablishment) -> Establish
     )
 
 
+def get_sha256_hash(s: str) -> str:
+    m = hashlib.sha256()
+    m.update(s.encode())
+    return m.hexdigest()
+
+
 def convert_dinesafeto_inspection(dsto_estab: DSTOEstablishment) -> List[Inspection]:
     inspections = []
     for dinesafeto_inspections in dsto_estab.inspections.values():
@@ -31,7 +38,7 @@ def convert_dinesafeto_inspection(dsto_estab: DSTOEstablishment) -> List[Inspect
                 ]
             }
             inspection = Inspection(
-                inspection_id=str(hash(str(dinesafeto_inspection))),
+                inspection_id=get_sha256_hash(str(dinesafeto_inspection)),
                 establishment_id=dsto_estab.external_id,
                 is_pass=dinesafeto_inspection.status.lower() == "pass",
                 timestamp=dinesafeto_inspection.date.timestamp(),
