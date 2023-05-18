@@ -12,11 +12,15 @@ establishment_md_str = """
 *Address: {address} ({lat:.4f}, {lon:.4f})*
 """
 
-inspection_md_str = """
+latest_inspection_md_str = """
 <p style="color:{status_color}">
-    Inspection on {inspection_dt_str}: {status}
+    Latest inspection on {inspection_dt_str}: {status}
 </p>
 """
+
+
+def get_dt_str_from_timestamp(ts: float) -> str:
+    return datetime.fromtimestamp(ts).strftime("%Y-%m-%d")
 
 
 def search_results(most_relevant: List[Tuple[Establishment, List[Inspection]]]):
@@ -37,21 +41,25 @@ def search_results(most_relevant: List[Tuple[Establishment, List[Inspection]]]):
         )
         st.markdown(yelp_rating_md_str, unsafe_allow_html=True)
 
-        for inspection in inspections:
-            status_color = "Green" if inspection.is_pass else "Red"
-            status = "Pass" if inspection.is_pass else "Fail"
-            inspection_dt_str = datetime.fromtimestamp(inspection.timestamp).strftime(
-                "%Y-%m-%d"
-            )
+        # print the latest inspection result
+        if len(inspections) > 0:
+            latest_inspection = inspections[0]
             st.markdown(
-                inspection_md_str.format(
-                    status_color=status_color,
-                    status=status,
-                    inspection_dt_str=inspection_dt_str,
+                latest_inspection_md_str.format(
+                    status_color="Green" if latest_inspection.is_pass else "Red",
+                    status="Pass" if latest_inspection.is_pass else "Fail",
+                    inspection_dt_str=get_dt_str_from_timestamp(
+                        ts=latest_inspection.timestamp
+                    ),
                 ),
                 unsafe_allow_html=True,
             )
-            with st.expander("details"):
+        # older inspections if any including latest
+        for inspection in inspections:
+            expander_title = (
+                f"Inspection on {get_dt_str_from_timestamp(inspection.timestamp)}: "
+            )
+            expander_title += "✅" if inspection.is_pass else "❌"
+            with st.expander(expander_title):
                 st.write(json.loads(inspection.details_json))
-
         st.markdown("----")
