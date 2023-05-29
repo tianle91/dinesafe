@@ -47,10 +47,12 @@ SHOW_TOP_N_RELEVANT = 25
 REFRESH_SECONDS = 43200  # 12 hours
 
 st.title("DinesafeTO")
-st.markdown('''
+st.markdown(
+    """
 Data is taken from [open.toronto.ca](https://open.toronto.ca/dataset/dinesafe/).
 Github: [tianle91/dinesafe](https://github.com/tianle91/dinesafe)
-''')
+"""
+)
 
 
 search_term = st.text_input(
