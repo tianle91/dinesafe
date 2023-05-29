@@ -80,7 +80,7 @@ scheduler.add_job(
 
 
 # set up authentication ----------------------------------------------------------------------------
-API_KEY = os.getenv("API_KEY", None)
+API_KEY = os.getenv("API_KEY", "???")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  # use token authentication
 
 
