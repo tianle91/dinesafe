@@ -69,12 +69,15 @@ search_term = st.text_input(
 )
 
 # get geolocation
+geo_d = None
 if st.checkbox("Near me"):
     geo_d = get_geolocation()
     if geo_d is not None:
         geolocation = parse_geolocation(geo_d)
         latitude = geolocation.coords.latitude
         longitude = geolocation.coords.longitude
+if geo_d is None:
+    st.warning("No location provided, using defaults.")
 
 st.experimental_set_query_params(
     search_term=search_term,
