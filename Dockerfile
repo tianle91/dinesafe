@@ -5,7 +5,8 @@ FROM python:${PYTHON_VERSION}-${IMAGE_VARIANT}
 
 RUN apt update -y && apt install git
 
-RUN pip install poetry tox tox-poetry-installer
+# make sure these match tox.ini
+RUN pip install tox==3.26.0 poetry==1.3.2 tox-poetry-installer==0.10.2
 
 COPY . /work
 WORKDIR /work
