@@ -114,13 +114,12 @@ def read_search(
     search_term: Optional[str] = None,
     latitude: Optional[float] = None,
     longitude: Optional[float] = None,
-    accuracy: Optional[float] = None,
     limit: Optional[int] = 25,
     limit_inspections: Optional[int] = 5,
 ):
     coords = None
-    if all([v is not None for v in (accuracy, latitude, longitude)]):
-        coords = Coords(accuracy=accuracy, latitude=latitude, longitude=longitude)
+    if latitude is not None and longitude is not None:
+        coords = Coords(latitude=latitude, longitude=longitude)
     with DB_ENGINE.connect() as conn:
         relevant_establishment_ids = get_relevant_establishment_ids(
             conn=conn,

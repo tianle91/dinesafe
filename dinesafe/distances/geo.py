@@ -7,9 +7,9 @@ from sklearn.metrics.pairwise import haversine_distances
 
 @dataclass
 class Coords:
-    accuracy: float
     latitude: float
     longitude: float
+    accuracy: Optional[float] = None
     altitude: Optional[float] = None
     altitudeAccuracy: Optional[float] = None
     heading: Optional[float] = None
@@ -19,7 +19,7 @@ class Coords:
 @dataclass
 class GeoLocation:
     coords: Coords
-    timestamp: int
+    timestamp: Optional[int] = None
 
 
 def parse_geolocation(d: dict) -> GeoLocation:
