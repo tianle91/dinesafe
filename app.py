@@ -110,8 +110,6 @@ else:
             logger.fatal(f"Failed to parse json: {search_response.json()}")
             raise e
 
-
-st.markdown("----")
 if len(most_relevant) == 0:
     st.warning("No relevant establishments found.")
 else:
@@ -123,5 +121,4 @@ else:
             else None
         ),
     )
-    st.markdown("----")
     search_results(most_relevant=most_relevant)

@@ -1,6 +1,7 @@
 from typing import List, Optional, Tuple
 
 import folium
+import streamlit as st
 from folium.map import Icon
 from streamlit_folium import folium_static
 
@@ -37,4 +38,11 @@ def map_results(
         all_lat_lons.append((establishment.latitude, establishment.longitude))
 
     m.fit_bounds(bounds=all_lat_lons)
-    folium_static(m)
+
+    make_map_responsive = """
+        <style>
+        [title~="st.iframe"] { width: 100%}
+        </style>
+        """
+    st.markdown(make_map_responsive, unsafe_allow_html=True)
+    folium_static(m, width=500, height=500)
