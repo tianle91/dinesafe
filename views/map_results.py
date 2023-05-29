@@ -25,10 +25,8 @@ def map_results(
     for establishment, inspections in most_relevant:
         is_pass = inspections[0].is_pass if len(inspections) > 0 else None
         icon, color = "question", "orange"
-        if is_pass is not None and is_pass:
-            icon, color = "tick", "green"
-        else:
-            icon, color = "xmark", "red"
+        if is_pass is not None:
+            icon, color = ("tick", "green") if is_pass else ("xmark", "red")
 
         folium.Marker(
             location=[establishment.latitude, establishment.longitude],
