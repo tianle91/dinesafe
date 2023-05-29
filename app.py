@@ -54,71 +54,75 @@ Github: [tianle91/dinesafe](https://github.com/tianle91/dinesafe)
 """
 )
 
+# toronto union station
+DEFAULT_LAT_LON = 43.6453, -79.3806
+
+EXISTING_QUERY_PARAMS = st.experimental_get_query_params()
+search_term_default = EXISTING_QUERY_PARAMS.get("search_term", [""])[0]
+latitude = float(EXISTING_QUERY_PARAMS.get("latitude", [DEFAULT_LAT_LON[0]])[0])
+longitude = float(EXISTING_QUERY_PARAMS.get("longitude", [DEFAULT_LAT_LON[1]])[0])
 
 search_term = st.text_input(
     label="Search for business name (leave empty for all businesses)",
-    value="New Hong Fatt",
+    value=search_term_default,
     help="Just enter some words on the business name correctly.",
 )
-geolocation = None
+
+# get geolocation
 if st.checkbox("Near me"):
     geo_d = get_geolocation()
     if geo_d is not None:
         geolocation = parse_geolocation(geo_d)
+        latitude = geolocation.coords.latitude
+        longitude = geolocation.coords.longitude
+
+st.experimental_set_query_params(
+    search_term=search_term,
+    latitude=latitude,
+    longitude=longitude,
+)
+
+st.info(f"Finding establishments near: `{latitude}, {longitude}`")
 
 
-most_relevant = []
-if geolocation is None and len(search_term) == 0:
-    st.error('Either a search term or "Near Me" must be selected for search.')
-else:
-    with st.spinner("Getting results..."):
-        search_response = requests.get(
-            url=os.path.join(API_URL, "search"),
-            headers=HEADERS,
-            params={
-                "search_term": search_term,
-                "latitude": geolocation.coords.latitude
-                if geolocation is not None
-                else None,
-                "longitude": geolocation.coords.longitude
-                if geolocation is not None
-                else None,
-                "accuracy": geolocation.coords.accuracy
-                if geolocation is not None
-                else None,
-            },
-        )
-        if search_response.status_code != 200:
-            st.warning("Failed to get search result.")
-        try:
-            for estab_d, inspection_ds in search_response.json():
+with st.spinner("Getting results..."):
+    search_response = requests.get(
+        url=os.path.join(API_URL, "search"),
+        headers=HEADERS,
+        params={
+            "search_term": search_term,
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    )
+    if search_response.status_code != 200:
+        st.warning("Failed to get search result.")
+    try:
+        most_relevant = []
+        for estab_d, inspection_ds in search_response.json():
+            try:
+                establishment = Establishment(**estab_d)
+            except Exception as e:
+                logger.fatal(f"Failed to parse into Establishment: {estab_d}")
+                raise e
+            inspections = []
+            for inspection_d in inspection_ds:
                 try:
-                    establishment = Establishment(**estab_d)
+                    inspection = Inspection(**inspection_d)
                 except Exception as e:
-                    logger.fatal(f"Failed to parse into Establishment: {estab_d}")
+                    logger.fatal(f"Failed to parse into Inspection: {inspection_d}")
                     raise e
-                inspections = []
-                for inspection_d in inspection_ds:
-                    try:
-                        inspection = Inspection(**inspection_d)
-                    except Exception as e:
-                        logger.fatal(f"Failed to parse into Inspection: {inspection_d}")
-                        raise e
-                    inspections.append(inspection)
-                most_relevant.append((establishment, inspections))
-        except Exception as e:
-            logger.fatal(f"Failed to parse json: {search_response.json()}")
-            raise e
+                inspections.append(inspection)
+            most_relevant.append((establishment, inspections))
+    except Exception as e:
+        logger.fatal(f"Failed to parse json: {search_response.json()}")
+        raise e
 
 if len(most_relevant) == 0:
     st.warning("No relevant establishments found.")
-else:
-    map_results(
-        most_relevant=most_relevant,
-        center_loc=(
-            [geolocation.coords.latitude, geolocation.coords.longitude]
-            if geolocation is not None
-            else None
-        ),
-    )
-    search_results(most_relevant=most_relevant)
+
+map_results(
+    most_relevant=most_relevant,
+    center_loc=(latitude, longitude),
+)
+search_results(most_relevant=most_relevant)
