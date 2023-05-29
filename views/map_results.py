@@ -6,46 +6,6 @@ import streamlit as st
 
 from dinesafe.data.types import Establishment, Inspection
 
-establishment_icon_data_default = {
-    "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/default.svg",
-    "width": 100,
-    "height": 100,
-}
-
-establishment_icon_data_by_ranking = {
-    0: {
-        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/1.svg",
-        "width": 100,
-        "height": 100,
-    },
-    1: {
-        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/2.svg",
-        "width": 100,
-        "height": 100,
-    },
-    2: {
-        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/3.svg",
-        "width": 100,
-        "height": 100,
-    },
-    3: {
-        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/4.svg",
-        "width": 100,
-        "height": 100,
-    },
-    4: {
-        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/5.svg",
-        "width": 100,
-        "height": 100,
-    },
-}
-
-self_icon_data = {
-    "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/self.svg",
-    "width": 100,
-    "height": 100,
-}
-
 
 def map_results(
     most_relevant: List[Tuple[Establishment, List[Inspection]]],
@@ -62,9 +22,11 @@ def map_results(
                 "status": ("Pass" if inspections[0].is_pass else "Fail")
                 if len(inspections) > 0
                 else "No inspections",
-                "icon_data": establishment_icon_data_by_ranking.get(
-                    i, establishment_icon_data_default
-                ),
+                "icon_data": {
+                    "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/default.svg",
+                    "width": 100,
+                    "height": 100,
+                },
             }
         )
     establishment_df = pd.DataFrame(data=data)
@@ -86,7 +48,11 @@ def map_results(
                     "lat": lat,
                     "name": "Your Location",
                     "status": "",
-                    "icon_data": self_icon_data,
+                    "icon_data": {
+                        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/self.svg",
+                        "width": 100,
+                        "height": 100,
+                    },
                 }
             ]
         )
