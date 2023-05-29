@@ -39,6 +39,7 @@ def map_results(
 
     m.fit_bounds(bounds=all_lat_lons)
 
+    # https://github.com/randyzwitch/streamlit-folium/issues/7
     make_map_responsive = """
         <style>
         [title~="st.iframe"] { width: 100%}
