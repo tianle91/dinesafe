@@ -1,9 +1,11 @@
 import logging
 import os
+from datetime import datetime, timedelta
 from typing import Optional
 
 import mysql.connector
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from mysql.connector import MySQLConnection
@@ -22,19 +24,10 @@ from dinesafe.data.io import (
 from dinesafe.distances.geo import Coords
 from dinesafe.search import get_relevant_establishment_ids
 
-scheduler = BackgroundScheduler()
-scheduler.start()
-
-logger = logging.getLogger(__name__)
-app = FastAPI(debug=True)
-
-API_KEY = os.getenv("API_KEY", None)
+# set up database engine ---------------------------------------------------------------------------
 MYSQL_URL = os.getenv("MYSQL_URL", None)
 MYSQL_USER = os.getenv("MYSQL_USER", None)
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", None)
-
-if API_KEY is None:
-    raise ValueError("No API_KEY specified!")
 
 
 def create_database_if_not_exists(mysql_conn: MySQLConnection, database_name: str):
@@ -65,6 +58,29 @@ with DB_ENGINE.connect() as conn:
     create_inspection_table_if_not_exists(conn=conn)
 
 
+# set up refreshes ---------------------------------------------------------------------------------
+scheduler = BackgroundScheduler()
+scheduler.start()
+
+
+def _refresh_dinesafeto_and_update_db():
+    with DB_ENGINE.connect() as conn:
+        return refresh_dinesafeto_and_update_db(conn=conn)
+
+
+scheduler.add_job(
+    func=_refresh_dinesafeto_and_update_db,
+    trigger=IntervalTrigger(hours=12),
+    replace_existing=True,
+    max_instances=1,
+    id="_refresh_dinesafeto_and_update_db",
+    # interval trigger doesn't run the job now
+    next_run_time=datetime.now() + timedelta(seconds=5),
+)
+
+
+# set up authentication ----------------------------------------------------------------------------
+API_KEY = os.getenv("API_KEY", None)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  # use token authentication
 
 
@@ -73,6 +89,10 @@ def api_key_auth(api_key: str = Depends(oauth2_scheme)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Forbidden"
         )
+
+
+# finally the routes -------------------------------------------------------------------------------
+app = FastAPI(debug=True)
 
 
 @app.get("/")
@@ -117,23 +137,3 @@ def read_search(
             inspections = sorted(inspections, key=lambda v: v.timestamp, reverse=True)
             result.append((establishment, inspections[:limit_inspections]))
         return result
-
-
-def _refresh_dinesafeto_and_update_db():
-    with DB_ENGINE.connect() as conn:
-        return refresh_dinesafeto_and_update_db(conn=conn)
-
-
-@app.get("/refresh/{source_name}", dependencies=[Depends(api_key_auth)])
-def refresh_source(source_name: str = "dinesafeto"):
-    if source_name == "dinesafeto":
-        scheduler.add_job(
-            func=_refresh_dinesafeto_and_update_db,
-            replace_existing=False,
-            max_instances=1,
-            id="_refresh_dinesafeto_and_update_db",
-        )
-    else:
-        raise HTTPException(
-            status_code=404, detail=f"source_name: {source_name} not found"
-        )
