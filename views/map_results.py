@@ -6,24 +6,34 @@ import streamlit as st
 
 from dinesafe.data.types import Establishment, Inspection
 
+PASS_ICON_URL = "https://upload.wikimedia.org/wikipedia/commons/f/fa/Xcode_test_case_success_green.svg"
+FAIL_ICON_URL = (
+    "https://upload.wikimedia.org/wikipedia/commons/5/5e/Antu_task-reject.svg"
+)
+UNKNOWN_ICON_URL = "https://upload.wikimedia.org/wikipedia/commons/b/bf/Blue_question_mark_%28italic%29.svg"
+
 
 def map_results(
     most_relevant: List[Tuple[Establishment, List[Inspection]]],
     center_loc: Optional[Tuple[float, float]] = None,
 ):
     data = []
-    for i, v in enumerate(most_relevant):
-        establishment, inspections = v
+    for establishment, inspections in most_relevant:
+        is_pass = inspections[0].is_pass if len(inspections) > 0 else None
         data.append(
             {
                 "lon": establishment.longitude,
                 "lat": establishment.latitude,
                 "name": establishment.name,
-                "status": ("Pass" if inspections[0].is_pass else "Fail")
+                "status": ("?" if is_pass is None else "Pass" if is_pass else "Fail")
                 if len(inspections) > 0
                 else "No inspections",
                 "icon_data": {
-                    "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/default.svg",
+                    "url": UNKNOWN_ICON_URL
+                    if is_pass is None
+                    else PASS_ICON_URL
+                    if is_pass
+                    else FAIL_ICON_URL,
                     "width": 100,
                     "height": 100,
                 },
@@ -49,9 +59,9 @@ def map_results(
                     "name": "Your Location",
                     "status": "",
                     "icon_data": {
-                        "url": "https://raw.githubusercontent.com/tianle91/dinesafe/main/assets/map_icons/self.svg",
-                        "width": 100,
-                        "height": 100,
+                        "url": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Map_pin_icon.svg",
+                        "width": 94,
+                        "height": 128,
                     },
                 }
             ]
@@ -74,6 +84,6 @@ def map_results(
         layers=layers,
         map_style="road",
         initial_view_state=pydeck.data_utils.compute_view(points=points),
-        tooltip={"html": "{name} ({status})", "style": {"color": "white"}},
+        tooltip={"html": "{name}"},
     )
     st.pydeck_chart(r)
