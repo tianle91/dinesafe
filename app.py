@@ -1,11 +1,9 @@
 import logging
 import os
-import time
 
 import requests
 import requests_cache
 import streamlit as st
-from humanfriendly import format_timespan
 from streamlit_js_eval import get_geolocation
 
 from dinesafe.data.types import Establishment, Inspection
@@ -47,53 +45,11 @@ st.markdown(body=GOOGLE_ANALYTICS_TAG, unsafe_allow_html=True)
 
 SHOW_TOP_N_RELEVANT = 25
 REFRESH_SECONDS = 43200  # 12 hours
-LAST_REFRESHED_TS_P = "LAST_REFRESHED_TS"
 
 st.title("DinesafeTO")
-
-
-should_refresh = False
-if os.path.isfile(LAST_REFRESHED_TS_P):
-    with open(LAST_REFRESHED_TS_P) as f:
-        LAST_REFRESHED_TS = float(f.read())
-    ts_now = time.time()
-    if ts_now > LAST_REFRESHED_TS + REFRESH_SECONDS:
-        should_refresh = True
-        logger.info(
-            f"Will refresh due to stale: {ts_now} > {LAST_REFRESHED_TS} + {REFRESH_SECONDS}"
-        )
-else:
-    should_refresh = True
-    logger.info(f"Will refresh because {LAST_REFRESHED_TS_P} is not found.")
-
-
-with st.sidebar:
-    st.markdown(
-        "Data is taken from [open.toronto.ca](https://open.toronto.ca/dataset/dinesafe/)."
-    )
-    user_requested_refresh = st.button("Refresh data")
-    if user_requested_refresh:
-        logger.info("Refreshing due to user request.")
-    if user_requested_refresh or should_refresh:
-        with st.spinner("Refreshing data..."):
-            refresh_response = requests.get(
-                url=os.path.join(API_URL, "refresh/dinesafeto"),
-                headers=HEADERS,
-            )
-            if refresh_response.status_code == 200:
-                st.success("Successfully requested refresh!")
-            else:
-                st.warning("Failed to request refresh.")
-            LAST_REFRESHED_TS = time.time()
-            with open(LAST_REFRESHED_TS_P, mode="w") as f:
-                f.write(str(LAST_REFRESHED_TS))
-            st.experimental_singleton.clear()
-
-    num_minutes = (LAST_REFRESHED_TS + REFRESH_SECONDS - time.time()) // 60
-    st.markdown(
-        f"Next refresh in {format_timespan(num_seconds=60*num_minutes)}. \n\n"
-        "Github: [tianle91/dinesafe](https://github.com/tianle91/dinesafe)"
-    )
+st.markdown(
+    "Data is taken from [open.toronto.ca](https://open.toronto.ca/dataset/dinesafe/)."
+)
 
 
 search_term = st.text_input(

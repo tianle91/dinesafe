@@ -14,7 +14,6 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">3.9.7,<4.0" # should match Dockerfile
-humanfriendly = "*"
 pandas = "*"
 requests = "*"
 requests-cache = "*"
