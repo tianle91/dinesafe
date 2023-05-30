@@ -1,4 +1,5 @@
 # Dinesafe
+[![ci](https://github.com/tianle91/dinesafe/actions/workflows/ci.yaml/badge.svg)](https://github.com/tianle91/dinesafe/actions/workflows/ci.yaml)
 
 Check out [dinesafe.tchen.xyz](http://dinesafe.tchen.xyz)
 
