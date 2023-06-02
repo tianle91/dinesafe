@@ -11,8 +11,8 @@ from dinesafe.data.types import Establishment, Inspection
 def map_results(
     most_relevant: List[Tuple[Establishment, List[Inspection]]],
     center_loc: Optional[Tuple[float, float]] = None,
+    n_limit_bounds: Optional[int] = 1,
 ):
-    all_lat_lons = []
     m = folium.Map(location=center_loc, control_scale=True)
     if center_loc is not None:
         folium.Marker(
@@ -20,22 +20,31 @@ def map_results(
             tooltip="Current location",
             icon=Icon(color="blue"),
         ).add_to(m)
-        all_lat_lons.append(center_loc)
 
-    for establishment, inspections in most_relevant:
+    estab_lat_lons = []
+    for i, v in enumerate(most_relevant):
+        establishment, inspections = v
         is_pass = inspections[0].is_pass if len(inspections) > 0 else None
-        icon, color = "question", "orange"
-        if is_pass is not None:
-            icon, color = ("tick", "green") if is_pass else ("xmark", "red")
+
+        icon = str(i + 1) if i < 9 else "circle"
+        color = "orange" if is_pass is None else ("green" if is_pass else "red")
+        status = "unknown" if is_pass is None else ("pass" if is_pass else "fail")
+        print(icon, color, status)
 
         folium.Marker(
             location=[establishment.latitude, establishment.longitude],
-            tooltip=establishment.name,
+            tooltip=f"{establishment.name} ({status})",
             icon=Icon(icon=icon, color=color, prefix="fa"),
         ).add_to(m)
-        all_lat_lons.append((establishment.latitude, establishment.longitude))
+        estab_lat_lons.append((establishment.latitude, establishment.longitude))
 
-    m.fit_bounds(bounds=all_lat_lons)
+    # fit center and first n_limit_bounds establishments
+    m.fit_bounds(
+        bounds=[
+            center_loc,
+        ]
+        + estab_lat_lons[:n_limit_bounds]
+    )
 
     # https://github.com/randyzwitch/streamlit-folium/issues/7
     make_map_responsive = """
