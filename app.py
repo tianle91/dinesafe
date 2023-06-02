@@ -99,30 +99,31 @@ with st.spinner("Getting results..."):
         },
     )
     if search_response.status_code != 200:
-        st.warning("Failed to get search result.")
-    try:
-        most_relevant = []
-        for estab_d, inspection_ds in search_response.json():
-            try:
-                establishment = Establishment(**estab_d)
-            except Exception as e:
-                logger.fatal(f"Failed to parse into Establishment: {estab_d}")
-                raise e
-            inspections = []
-            for inspection_d in inspection_ds:
+        st.warning("Failed to get search result. Please retry later.")
+    else:
+        try:
+            most_relevant = []
+            for estab_d, inspection_ds in search_response.json():
                 try:
-                    inspection = Inspection(**inspection_d)
+                    establishment = Establishment(**estab_d)
                 except Exception as e:
-                    logger.fatal(f"Failed to parse into Inspection: {inspection_d}")
+                    logger.fatal(f"Failed to parse into Establishment: {estab_d}")
                     raise e
-                inspections.append(inspection)
-            most_relevant.append((establishment, inspections))
-    except Exception as e:
-        logger.fatal(f"Failed to parse json: {search_response.json()}")
-        raise e
+                inspections = []
+                for inspection_d in inspection_ds:
+                    try:
+                        inspection = Inspection(**inspection_d)
+                    except Exception as e:
+                        logger.fatal(f"Failed to parse into Inspection: {inspection_d}")
+                        raise e
+                    inspections.append(inspection)
+                most_relevant.append((establishment, inspections))
+        except Exception as e:
+            logger.fatal(f"Failed to parse json: {search_response.json()}")
+            raise e
 
 if len(most_relevant) == 0:
-    st.warning("No relevant establishments found.")
+    st.warning("No relevant establishments found. Please retry later.")
 
 map_results(
     most_relevant=most_relevant,
