@@ -17,7 +17,6 @@ python = ">3.9.7,<4.0" # should match Dockerfile
 pandas = "*"
 requests = "*"
 requests-cache = "*"
-scikit-learn = "*"
 streamlit = "1.13.0"
 streamlit-js-eval = "*"
 xmltodict = "*"
@@ -28,6 +27,8 @@ fastapi = "^0.95.1"
 uvicorn = {extras = ["standard"], version = "^0.22.0"}
 apscheduler = "^3.10.1"
 streamlit-folium = "^0.11.1"
+rapidfuzz = "^3.0.0"
+scikit-learn = "^1.2.2"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "*"
