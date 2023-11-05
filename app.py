@@ -87,7 +87,7 @@ st.experimental_set_query_params(
 
 st.info(f"Finding establishments near: `{latitude}, {longitude}`")
 
-
+most_relevant = []
 with st.spinner("Getting results..."):
     search_response = requests.get(
         url=os.path.join(API_URL, "search"),
@@ -102,7 +102,6 @@ with st.spinner("Getting results..."):
         st.warning("Failed to get search result. Please retry later.")
     else:
         try:
-            most_relevant = []
             for estab_d, inspection_ds in search_response.json():
                 try:
                     establishment = Establishment(**estab_d)
