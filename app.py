@@ -1,8 +1,6 @@
 import logging
-import os
-from typing import Dict, List
+from typing import Dict
 
-import requests
 import requests_cache
 import streamlit as st
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -14,7 +12,7 @@ from dinesafe.data.parsed import (
     get_establishments_from_xml,
     get_latest_dinesafeto_xml,
 )
-from dinesafe.data.types import Establishment, Inspection
+from dinesafe.data.types import Establishment
 from dinesafe.distances.geo import Coords, parse_geolocation
 from dinesafe.search import get_relevant_establishments
 from views.map_results import map_results
