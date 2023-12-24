@@ -83,9 +83,15 @@ class Establishment:
         return max(self.inspections.keys())
 
     @property
-    def get_inspections_latest_first(self) -> List[Inspection]:
+    def inspections_latest_first(self) -> List[Inspection]:
         inspections = []
         for v in self.inspections.values():
             inspections += v
         inspections.sort(key=lambda x: x.date, reverse=True)
         return inspections
+
+    def passed_most_recent_inspection(self) -> bool:
+        return (
+            len(self.inspections_latest_first) > 0
+            and self.inspections_latest_first[0].is_pass
+        )

@@ -35,33 +35,22 @@ requests_cache.install_cache(
 logger = logging.getLogger(__name__)
 
 
-GOOGLE_ANALYTICS_TAG = """
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-1XV37TNLTG"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-1XV37TNLTG');
-</script>
-"""
-st.markdown(body=GOOGLE_ANALYTICS_TAG, unsafe_allow_html=True)
+with open("google_analytics_tag.html") as f:
+    st.markdown(body=f.read(), unsafe_allow_html=True)
 
 
 SHOW_TOP_N_RELEVANT = 25
 REFRESH_HOURS = 12
 
-st.title("DinesafeTO")
 st.markdown(
-    """
+    """ # DinesafeTO
 Data is taken from [open.toronto.ca](https://open.toronto.ca/dataset/dinesafe/).
 Github: [tianle91/dinesafe](https://github.com/tianle91/dinesafe)
 """
 )
 
 
-@st.cache_resource()
+@st.cache_resource(ttl=REFRESH_HOURS * 60 * 60)
 def get_all_establishments() -> Dict[str, Establishment]:
     # get establishments and refresh scheduler
     dinesafe_xml_path = get_latest_dinesafeto_xml()
@@ -82,6 +71,20 @@ def get_all_establishments() -> Dict[str, Establishment]:
 
 
 establishments = get_all_establishments()
+
+
+@st.cache_resource(ttl=REFRESH_HOURS * 60 * 60)
+def get_failed_establishments():
+    return [e for e in establishments.values() if not e.passed_most_recent_inspection]
+
+
+failed_establishments = get_failed_establishments()
+
+st.write(
+    f"Loaded {len(establishments)} establishments "
+    f"with {len(failed_establishments)} failed inspections."
+)
+
 
 # toronto union station
 DEFAULT_LAT_LON = 43.6453, -79.3806
