@@ -19,13 +19,16 @@ latest_inspection_md_str = """
 """
 
 
-def get_dt_str_from_timestamp(ts: float) -> str:
-    return datetime.fromtimestamp(ts).strftime("%Y-%m-%d")
+def get_dt_str(dt: datetime) -> str:
+    return dt.strftime("%Y-%m-%d")
 
 
-def search_results(most_relevant: List[Tuple[Establishment, List[Inspection]]]):
-    for i, v in enumerate(most_relevant):
-        establishment, inspections = v
+def search_results(most_relevant: List[Establishment]):
+    for i, establishment in enumerate(most_relevant):
+        inspections = []
+        for v in establishment.inspections.values():
+            inspections += v
+        inspections.sort(key=lambda x: x.date, reverse=True)
 
         st.markdown(
             establishment_md_str.format(
@@ -48,18 +51,12 @@ def search_results(most_relevant: List[Tuple[Establishment, List[Inspection]]]):
                 latest_inspection_md_str.format(
                     status_color="Green" if latest_inspection.is_pass else "Red",
                     status="Pass" if latest_inspection.is_pass else "Fail",
-                    inspection_dt_str=get_dt_str_from_timestamp(
-                        ts=latest_inspection.timestamp
-                    ),
+                    inspection_dt_str=get_dt_str(latest_inspection.date),
                 ),
                 unsafe_allow_html=True,
             )
         # older inspections if any including latest
         for inspection in inspections:
-            expander_title = (
-                f"Inspection on {get_dt_str_from_timestamp(inspection.timestamp)}: "
-            )
+            expander_title = f"Inspection on {get_dt_str(inspection.date)}: "
             expander_title += "✅" if inspection.is_pass else "❌"
-            with st.expander(expander_title):
-                st.write(json.loads(inspection.details_json))
         st.markdown("----")

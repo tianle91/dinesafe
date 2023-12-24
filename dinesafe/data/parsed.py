@@ -2,13 +2,14 @@ import logging
 import os
 import time
 from datetime import datetime
+from glob import glob
 from typing import Dict, Optional
 
 import wget
 import xmltodict
 
 from dinesafe.constants import YMD_FORMAT
-from dinesafe.data.dinesafeto.types import Establishment, Infraction, Inspection
+from dinesafe.data.types import Establishment, Infraction, Inspection
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,12 @@ def download_dinesafeto(download_directory="data/dinesafe") -> Optional[str]:
     except Exception as e:
         logger.error(str(e))
     return None
+
+
+def get_latest_dinesafeto_xml(download_directory="data/dinesafe") -> Optional[str]:
+    xml_paths = list(glob(os.path.join(download_directory, "*.xml")))
+    xml_paths.sort(reverse=True)
+    return xml_paths[0] if len(xml_paths) > 0 else None
 
 
 def get_parsed_value(d, k):
@@ -67,7 +74,7 @@ def get_inspection(d: dict) -> Inspection:
     )
 
 
-def get_establishment(d: dict, updated_timestamp: float) -> Establishment:
+def get_establishment(d: dict) -> Establishment:
     # get list of dicts for inspection
     inspection_d_or_l = d.get("INSPECTION", [])
     if isinstance(inspection_d_or_l, dict):
@@ -87,25 +94,21 @@ def get_establishment(d: dict, updated_timestamp: float) -> Establishment:
         name=get_parsed_value(d, "NAME"),
         type=get_parsed_value(d, "TYPE"),
         address=get_parsed_value(d, "ADDRESS"),
-        latitude=get_parsed_value(d, "LATITUDE"),
-        longitude=get_parsed_value(d, "LONGITUDE"),
+        latitude=float(get_parsed_value(d, "LATITUDE")),
+        longitude=float(get_parsed_value(d, "LONGITUDE")),
         status=get_parsed_value(d, "STATUS"),
-        updated_timestamp=updated_timestamp,
         inspections=inspections,
     )
 
 
-def get_parsed_dinesafetoestablishments(
-    path_to_xml: str,
-    updated_timestamp: float,
-) -> Dict[str, Establishment]:
+def get_establishments_from_xml(path_to_xml: str) -> Dict[str, Establishment]:
     establishment_l = []
     with open(path_to_xml) as f:
         establishment_l = xmltodict.parse(f.read())["DINESAFE_DATA"]["ESTABLISHMENT"]
     establishments = {}
     for d in establishment_l:
         try:
-            establishment = get_establishment(d, updated_timestamp=updated_timestamp)
+            establishment = get_establishment(d)
         except Exception as e:
             logger.error(f"Failed to parse establishment: {d}")
             raise (e)

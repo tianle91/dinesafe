@@ -5,11 +5,11 @@ import streamlit as st
 from folium.map import Icon
 from streamlit_folium import folium_static
 
-from dinesafe.data.types import Establishment, Inspection
+from dinesafe.data.types import Establishment
 
 
 def map_results(
-    most_relevant: List[Tuple[Establishment, List[Inspection]]],
+    most_relevant: List[Establishment],
     center_loc: Optional[Tuple[float, float]] = None,
     n_limit_bounds: Optional[int] = 1,
 ):
@@ -22,14 +22,16 @@ def map_results(
         ).add_to(m)
 
     estab_lat_lons = []
-    for i, v in enumerate(most_relevant):
-        establishment, inspections = v
+    for i, establishment in enumerate(most_relevant):
+        inspections = []
+        for v in establishment.inspections.values():
+            inspections += v
+        inspections.sort(key=lambda x: x.date, reverse=True)
         is_pass = inspections[0].is_pass if len(inspections) > 0 else None
 
         icon = str(i + 1) if i < 9 else "circle"
         color = "orange" if is_pass is None else ("green" if is_pass else "red")
         status = "unknown" if is_pass is None else ("pass" if is_pass else "fail")
-        print(icon, color, status)
 
         folium.Marker(
             location=[establishment.latitude, establishment.longitude],
