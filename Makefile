@@ -2,7 +2,7 @@
 
 .PHONY: clean
 clean:
-	rm -rf .tox .cache .venv requirements.txt .git/hooks/pre-commit
+	rm -rf .tox .cache .venv requirements.txt .git/hooks/pre-commit **/__pycache__
 	rm -rf LAST_REFRESHED_TS data/dinesafe/*.xml *.sqlite
 
 .venv:

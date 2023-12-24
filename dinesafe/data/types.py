@@ -59,6 +59,9 @@ class Inspection:
             ),
         )
 
+    def is_pass(self) -> bool:
+        return self.status.lower() == "pass"
+
 
 @dataclass
 class Establishment:
@@ -74,7 +77,15 @@ class Establishment:
     @property
     def external_id(self) -> str:
         return f"DinesafeTO_{self.id}"
-    
+
     @property
     def latest_inspection_date(self) -> Optional[datetime]:
         return max(self.inspections.keys())
+
+    @property
+    def get_inspections_latest_first(self) -> List[Inspection]:
+        inspections = []
+        for v in self.inspections.values():
+            inspections += v
+        inspections.sort(key=lambda x: x.date, reverse=True)
+        return inspections

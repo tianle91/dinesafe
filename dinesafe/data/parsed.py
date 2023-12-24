@@ -2,6 +2,7 @@ import logging
 import os
 import time
 from datetime import datetime
+from glob import glob
 from typing import Dict, Optional
 
 import wget
@@ -29,6 +30,12 @@ def download_dinesafeto(download_directory="data/dinesafe") -> Optional[str]:
     except Exception as e:
         logger.error(str(e))
     return None
+
+
+def get_latest_dinesafeto_xml(download_directory="data/dinesafe") -> Optional[str]:
+    xml_paths = list(glob(os.path.join(download_directory, "*.xml")))
+    xml_paths.sort(reverse=True)
+    return xml_paths[0] if len(xml_paths) > 0 else None
 
 
 def get_parsed_value(d, k):
@@ -87,8 +94,8 @@ def get_establishment(d: dict) -> Establishment:
         name=get_parsed_value(d, "NAME"),
         type=get_parsed_value(d, "TYPE"),
         address=get_parsed_value(d, "ADDRESS"),
-        latitude=get_parsed_value(d, "LATITUDE"),
-        longitude=get_parsed_value(d, "LONGITUDE"),
+        latitude=float(get_parsed_value(d, "LATITUDE")),
+        longitude=float(get_parsed_value(d, "LONGITUDE")),
         status=get_parsed_value(d, "STATUS"),
         inspections=inspections,
     )
